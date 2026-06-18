@@ -808,6 +808,19 @@ function generateCode() {
 
 function norm(s) { return (s||'').trim().toLowerCase(); }
 
+window.exportData = function () {
+  console.log("Export lancé");
+
+  // exemple simple
+  const data = localStorage.getItem("cave");
+  const blob = new Blob([data || ""], { type: "application/json" });
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "cave-export.json";
+  a.click();
+};
+
 function showToast(msg, duration=2500) {
   const t = document.getElementById('toast');
   t.textContent = msg;
