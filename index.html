@@ -695,7 +695,7 @@ function renderSessionScreen() {
 
 // Corps du vin révélé — vue organisateur (avec la vraie réponse)
 function bodyHost(secret, ans, pts) {
-  const pOk = norm(secret.producer) && norm(secret.producer)===norm(ans.producer);
+  const pOk = producerMatches(secret.producer, ans.producer);
   const aOk = norm(secret.appellation) && norm(secret.appellation)===norm(ans.appellation);
   let mPts=0, mCls='';
   if (secret.millesime&&ans.millesime) {
@@ -770,7 +770,75 @@ function saveAnswer(wineId, field, value) {
 function computeWineScore(secret, guess) {
   if (!secret||!guess) return 0;
   let pts = 0;
-  if (norm(secret.producer)    && norm(secret.producer)===norm(guess.producer))    pts+=5;
+  if (producerMatches(secret.producer, guess.producer)) pts += 5;
+  const norm = s => (s||'').trim().toLowerCase();
+  function normalizeProducer(str) {
+  return norm(str)
+    // retire accents
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+
+    // retire mots fréquents
+    .replace(/\b(domaine|domaines|dom|clos|chateau|mas|vignoble|vignobles)\b/g, "")
+
+    // retire ponctuation
+    .replace(/[^a-z0-9\s]/g, " ")
+
+    // espaces multiples
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Distance de Levenshtein
+function levenshtein(a, b) {
+  const matrix = [];
+
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+
+  return matrix[b.length][a.length];
+}
+
+function producerMatches(secretProducer, guessProducer) {
+  const a = normalizeProducer(secretProducer);
+  const b = normalizeProducer(guessProducer);
+
+  if (!a || !b) return false;
+
+  // exact
+  if (a === b) return true;
+
+  // inclusion ("domaine gramenon" vs "gramenon")
+  if (a.includes(b) || b.includes(a)) return true;
+
+  // fautes de frappe tolérées
+  const distance = levenshtein(a, b);
+
+  // tolérance adaptative
+  if (a.length <= 6) return distance <= 1;
+  if (a.length <= 12) return distance <= 2;
+
+  return distance <= 3;
+}
   if (norm(secret.appellation) && norm(secret.appellation)===norm(guess.appellation)) pts+=3;
   if (secret.millesime && guess.millesime) {
     const d=Math.abs(secret.millesime-parseInt(guess.millesime));
@@ -952,7 +1020,7 @@ function renderRevealResult(session, wineId) {
   })).sort((a,b)=>b.pts-a.pts);
 
   document.getElementById('reveal-scores-list').innerHTML = wineScores.map(t=>{
-    const pOk = norm(secret.producer)&&norm(secret.producer)===norm(t.ans.producer);
+    const pOk = producerMatches(secret.producer, t.ans.producer);
     const aOk = norm(secret.appellation)&&norm(secret.appellation)===norm(t.ans.appellation);
     let mPts=0;
     if(secret.millesime&&t.ans.millesime){
