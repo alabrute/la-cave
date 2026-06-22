@@ -384,6 +384,25 @@ input:focus{border-color:var(--or);}
 </div>
 
 <script type="module">
+
+  /* ════════════════════════════════════════
+   EXPOSITION DES FONCTIONS AUX onclick HTML
+════════════════════════════════════════ */
+window.showScreen        = showScreen;
+window.addWineRow        = addWineRow;
+window.createSession     = createSession;
+window.joinSession       = joinSession;
+window.toggleWine        = toggleWine;
+window.saveAnswer        = saveAnswer;
+window.renderScores      = renderScores;
+window.doReveal          = doReveal;
+window.nextReveal        = nextReveal;
+window.leaveSession      = leaveSession;
+window.copySessionCode   = copySessionCode;
+window.renderHistory     = renderHistory;
+window.backToHistoryList = backToHistoryList;
+window.endSession        = endSession;
+window.rejoinFromHistory = rejoinFromHistory;
 /* ════════════════════════════════════════
    FIREBASE
 ════════════════════════════════════════ */
@@ -826,88 +845,27 @@ function producerMatches(secretProducer, guessProducer) {
 }
 
 function computeWineScore(secret, guess) {
-  if (!secret||!guess) return 0;
+  if (!secret || !guess) return 0;
+
   let pts = 0;
-  if (producerMatches(secret.producer, guess.producer)) pts += 5;
-  const norm = s => (s||'').trim().toLowerCase();
-  function normalizeProducer(str) {
-  return norm(str)
-    // retire accents
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
 
-    // retire mots fréquents
-    .replace(/\b(domaine|domaines|dom|clos|chateau|mas|vignoble|vignobles)\b/g, "")
-
-    // retire ponctuation
-    .replace(/[^a-z0-9\s]/g, " ")
-
-    // espaces multiples
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-// Distance de Levenshtein
-function levenshtein(a, b) {
-  const matrix = [];
-
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
+  if (producerMatches(secret.producer, guess.producer)) {
+    pts += 5;
   }
 
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
+  const norm = s => (s || '').trim().toLowerCase();
+
+  if (norm(secret.appellation) && norm(secret.appellation) === norm(guess.appellation)) {
+    pts += 3;
   }
 
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1
-        );
-      }
-    }
-  }
-
-  return matrix[b.length][a.length];
-}
-
-function producerMatches(secretProducer, guessProducer) {
-  const a = normalizeProducer(secretProducer);
-  const b = normalizeProducer(guessProducer);
-
-  if (!a || !b) return false;
-
-  // exact
-  if (a === b) return true;
-
-  // inclusion ("domaine gramenon" vs "gramenon")
-  if (a.includes(b) || b.includes(a)) return true;
-
-  // fautes de frappe tolérées
-  const distance = levenshtein(a, b);
-
-  // tolérance adaptative
-  if (a.length <= 6) return distance <= 1;
-  if (a.length <= 12) return distance <= 2;
-
-  return distance <= 3;
-}
-  if (norm(secret.appellation) && norm(secret.appellation)===norm(guess.appellation)) pts+=3;
   if (secret.millesime && guess.millesime) {
-    const d=Math.abs(secret.millesime-parseInt(guess.millesime));
-    if(d===0) pts+=2; else if(d===1) pts+=1;
+    const d = Math.abs(secret.millesime - parseInt(guess.millesime));
+    if (d === 0) pts += 2;
+    else if (d === 1) pts += 1;
   }
-  return pts;
-}
 
-function getTotalScore(session, tasterName) {
-  if (!session.scores?.[tasterName]) return 0;
-  return Object.values(session.scores[tasterName]).reduce((s,p)=>s+(p||0),0);
+  return pts;
 }
 
 /* ════════════════════════════════════════
@@ -1314,25 +1272,6 @@ if(currentUser?.sessionCode) {
     }
   }).catch(()=>hideLoading());
 }
-
-/* ════════════════════════════════════════
-   EXPOSITION DES FONCTIONS AUX onclick HTML
-════════════════════════════════════════ */
-window.showScreen        = showScreen;
-window.addWineRow        = addWineRow;
-window.createSession     = createSession;
-window.joinSession       = joinSession;
-window.toggleWine        = toggleWine;
-window.saveAnswer        = saveAnswer;
-window.renderScores      = renderScores;
-window.doReveal          = doReveal;
-window.nextReveal        = nextReveal;
-window.leaveSession      = leaveSession;
-window.copySessionCode   = copySessionCode;
-window.renderHistory     = renderHistory;
-window.backToHistoryList = backToHistoryList;
-window.endSession        = endSession;
-window.rejoinFromHistory = rejoinFromHistory;
 
 </script>
 </body>
