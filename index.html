@@ -383,26 +383,8 @@ input:focus{border-color:var(--or);}
   <div id="loading-msg" style="color:var(--or);font-family:'Playfair Display',serif;font-size:16px;"></div>
 </div>
 
-<script type="module">
 
-  /* ════════════════════════════════════════
-   EXPOSITION DES FONCTIONS AUX onclick HTML
-════════════════════════════════════════ */
-window.showScreen        = showScreen;
-window.addWineRow        = addWineRow;
-window.createSession     = createSession;
-window.joinSession       = joinSession;
-window.toggleWine        = toggleWine;
-window.saveAnswer        = saveAnswer;
-window.renderScores      = renderScores;
-window.doReveal          = doReveal;
-window.nextReveal        = nextReveal;
-window.leaveSession      = leaveSession;
-window.copySessionCode   = copySessionCode;
-window.renderHistory     = renderHistory;
-window.backToHistoryList = backToHistoryList;
-window.endSession        = endSession;
-window.rejoinFromHistory = rejoinFromHistory;
+<script type="module">
 /* ════════════════════════════════════════
    FIREBASE
 ════════════════════════════════════════ */
@@ -426,9 +408,6 @@ const db  = getFirestore(app);
 /* ════════════════════════════════════════
    ÉTAT LOCAL
 ════════════════════════════════════════ */
-// currentUser  : { name, role:'host'|'taster', sessionCode, pwHash? }
-// currentSession : données publiques Firestore (pas de réponses des vins)
-// currentSecrets : { [wineId]: {producer,appellation,millesime,label} } — host only
 let currentUser    = null;
 let currentSession = null;
 let currentSecrets = null;
@@ -439,17 +418,17 @@ const saveUser = () => localStorage.setItem(LOCAL_KEY, JSON.stringify(currentUse
 const loadUser = () => { try { const d = localStorage.getItem(LOCAL_KEY); if (d) currentUser = JSON.parse(d); } catch(e){} };
 
 /* ════════════════════════════════════════
-   FIRESTORE REFS
-   /sessions/{code}              — public (wines sans réponses, tasters, scores)
-   /sessions/{code}/meta/secrets — réponses des vins, host only
+   REFS FIRESTORE
+   /sessions/{code}             — public
+   /sessions/{code}/meta/secrets — réponses, host only
 ════════════════════════════════════════ */
 const sRef = code => doc(db, 'sessions', code);
 const xRef = code => doc(db, 'sessions', code, 'meta', 'secrets');
 
 /* ════════════════════════════════════════
-   UTILITAIRES
+   UTILITAIRES — UNE SEULE DÉFINITION DE norm
 ════════════════════════════════════════ */
-const norm = s => (s||'').trim().toLowerCase();
+function norm(s) { return (s||'').trim().toLowerCase(); }
 
 function generateCode() {
   const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -473,6 +452,81 @@ function showLoading(msg='Chargement…') {
 function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
 
 /* ════════════════════════════════════════
+   FUZZY MATCHING PRODUCTEUR & APPELLATION
+
+   Algorithme :
+   1. cleanName() retire les stop words (domaine, château, cave, de, du…)
+      et les accents avant comparaison
+   2. levenshtein() calcule la distance d'édition
+   3. fuzzyMatch() valide si distance ≤ seuil (20% de la longueur, min 1, max 3)
+
+   Exemples qui matchent "Domaine de Gramenon" :
+     "Gramenon", "Grammenon", "domaines Gramenon", "domaine Gramenenon"
+════════════════════════════════════════ */
+const STOP_WORDS = new Set([
+  'domaine','domaines','chateau','chateaux','maison','cave','caves',
+  'clos','mas','abbaye','prieure','prieuré','vignoble','vignobles',
+  'propriete','propriété','estate','winery','cellars','cellar',
+  'de','du','des','le','la','les','et','of','the','di','del','&'
+]);
+
+function cleanName(s) {
+  return norm(s)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // retire accents
+    .replace(/[^a-z0-9 ]/g, ' ')                        // retire ponctuation
+    .split(/\s+/)
+    .filter(w => w.length > 0 && !STOP_WORDS.has(w))
+    .join(' ')
+    .trim();
+}
+
+function levenshtein(a, b) {
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const dp = Array.from({length: a.length + 1}, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[a.length][b.length];
+}
+
+function fuzzyMatch(ref, guess) {
+  if (!ref || !guess) return false;
+  const a = cleanName(ref);
+  const b = cleanName(guess);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const threshold = Math.min(3, Math.max(1, Math.floor(Math.max(a.length, b.length) * 0.2)));
+  return levenshtein(a, b) <= threshold;
+}
+
+/* ════════════════════════════════════════
+   CALCUL DES SCORES
+   — calculés par l'organisateur à la révélation
+   — écrits dans session.scores (Firestore)
+   — les dégustateurs n'ont jamais accès aux secrets
+════════════════════════════════════════ */
+function computeWineScore(secret, guess) {
+  if (!secret || !guess) return 0;
+  let pts = 0;
+  if (norm(secret.producer)    && fuzzyMatch(secret.producer,    guess.producer))    pts += 5;
+  if (norm(secret.appellation) && fuzzyMatch(secret.appellation, guess.appellation)) pts += 3;
+  if (secret.millesime && guess.millesime) {
+    const d = Math.abs(secret.millesime - parseInt(guess.millesime));
+    if (d === 0) pts += 2; else if (d === 1) pts += 1;
+  }
+  return pts;
+}
+
+function getTotalScore(session, name) {
+  if (!session.scores?.[name]) return 0;
+  return Object.values(session.scores[name]).reduce((s, p) => s + (p||0), 0);
+}
+
+/* ════════════════════════════════════════
    NAVIGATION
 ════════════════════════════════════════ */
 function showScreen(id) {
@@ -480,8 +534,7 @@ function showScreen(id) {
   document.getElementById('screen-'+id)?.classList.add('active');
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   const map = {home:'Accueil',session:'Session',scores:'Scores',history:'Historique',reveal:'🔓 Révéler'};
-  const root = id.split('-')[0];
-  document.querySelectorAll('.nav-tab').forEach(t => { if (t.textContent===map[root]) t.classList.add('active'); });
+  document.querySelectorAll('.nav-tab').forEach(t => { if (t.textContent === map[id.split('-')[0]]) t.classList.add('active'); });
   if (id==='session') renderSessionScreen();
   if (id==='scores')  renderScores();
   if (id==='history') renderHistory();
@@ -496,10 +549,10 @@ function subscribeSession(code) {
   unsubscribe = onSnapshot(sRef(code), snap => {
     if (!snap.exists()) return;
     currentSession = snap.data();
-    const active = document.querySelector('.screen.active')?.id?.replace('screen-','');
-    if (active==='session') renderSessionScreen();
-    if (active==='scores')  renderScores();
-    if (active==='reveal')  renderRevealScreen();
+    const id = document.querySelector('.screen.active')?.id?.replace('screen-','');
+    if (id==='session') renderSessionScreen();
+    if (id==='scores')  renderScores();
+    if (id==='reveal')  renderRevealScreen();
   });
 }
 
@@ -518,7 +571,7 @@ function addWineRow() {
   div.innerHTML = `
     <div class="flex-between" style="margin-bottom:10px;">
       <span style="font-family:'Playfair Display',serif;color:var(--or);">Vin ${wineRowCount}</span>
-      <button class="btn btn-danger btn-sm" onclick="document.getElementById('row_${wid}').remove()">✕</button>
+      <button class="btn btn-danger btn-sm" onclick="addWineRowRemove('row_${wid}')">✕</button>
     </div>
     <div class="grid-2">
       <div class="form-group" style="margin-bottom:8px;">
@@ -536,6 +589,7 @@ function addWineRow() {
     </div>`;
   document.getElementById('wine-rows-list').appendChild(div);
 }
+function addWineRowRemove(id) { document.getElementById(id)?.remove(); }
 
 async function createSession() {
   const sessionName = document.getElementById('create-session-name').value.trim();
@@ -544,14 +598,14 @@ async function createSession() {
   if (!sessionName || !hostName) { showToast('Remplissez le nom de session et votre prénom'); return; }
   if (!password)                  { showToast('Choisissez un mot de passe organisateur'); return; }
 
-  const winesPublic  = [];  // sans réponses
-  const winesSecrets = {};  // réponses uniquement
+  const winesPublic  = [];
+  const winesSecrets = {};
   let idx = 1;
   document.querySelectorAll('[id^="row_wine_"]').forEach(row => {
     const wid = row.id.replace('row_','');
-    const p = document.getElementById(wid+'_producer').value.trim();
-    const a = document.getElementById(wid+'_appellation').value.trim();
-    const m = parseInt(document.getElementById(wid+'_millesime').value)||0;
+    const p = document.getElementById(wid+'_producer')?.value.trim() || '';
+    const a = document.getElementById(wid+'_appellation')?.value.trim() || '';
+    const m = parseInt(document.getElementById(wid+'_millesime')?.value) || 0;
     if (p||a||m) {
       const label = 'Vin '+(idx++);
       winesPublic.push({ id:wid, label, revealed:false });
@@ -564,17 +618,12 @@ async function createSession() {
   try {
     const code   = generateCode();
     const pwHash = await hashPwd(password);
-
-    // Document public — aucune réponse
     const pub = {
       code, name:sessionName, host:hostName, hostHash:pwHash,
       createdAt:Date.now(), status:'active',
-      wines:winesPublic,
-      tasters:{},   // { [name]: { answers:{ [wineId]:{producer,appellation,millesime} } } }
-      scores:{}     // { [name]: { [wineId]: points } } — rempli à la révélation
+      wines:winesPublic, tasters:{}, scores:{}
     };
     await setDoc(sRef(code), pub);
-    // Document secrets
     await setDoc(xRef(code), { wines:winesSecrets });
 
     currentUser    = { name:hostName, role:'host', sessionCode:code, pwHash };
@@ -603,18 +652,17 @@ async function joinSession() {
   showLoading('Connexion…');
   try {
     const snap = await getDoc(sRef(code));
-    if (!snap.exists())             { hideLoading(); showToast('Session introuvable'); return; }
+    if (!snap.exists())            { hideLoading(); showToast('Session introuvable'); return; }
     const session = snap.data();
-    if (session.status==='closed')  { hideLoading(); showToast('Session clôturée'); return; }
+    if (session.status==='closed') { hideLoading(); showToast('Session clôturée'); return; }
 
     let role='taster', pwHash=null;
     if (password) {
       pwHash = await hashPwd(password);
-      if (pwHash!==session.hostHash) { hideLoading(); showToast('Mot de passe incorrect'); return; }
+      if (pwHash !== session.hostHash) { hideLoading(); showToast('Mot de passe incorrect'); return; }
       role = 'host';
     }
 
-    // Enregistrer si nouveau
     if (!session.tasters[name]) {
       await updateDoc(sRef(code), { [`tasters.${name}`]: { answers:{} } });
     }
@@ -636,7 +684,7 @@ async function joinSession() {
 }
 
 /* ════════════════════════════════════════
-   ÉCRAN SESSION — SAISIE DES RÉPONSES
+   ÉCRAN SESSION
 ════════════════════════════════════════ */
 function renderSessionScreen() {
   if (!currentUser||!currentSession) { showScreen('home'); return; }
@@ -644,12 +692,11 @@ function renderSessionScreen() {
   const session = currentSession;
   const taster  = session.tasters[name] || { answers:{} };
 
-  document.getElementById('session-title').textContent       = session.name;
-  document.getElementById('session-player-name').textContent = name + (role==='host' ? ' · organisateur' : '');
-  document.getElementById('session-my-score').textContent    = getTotalScore(session, name) + ' pts';
-  document.getElementById('session-code-display').textContent= session.code;
+  document.getElementById('session-title').textContent        = session.name;
+  document.getElementById('session-player-name').textContent  = name + (role==='host' ? ' · organisateur' : '');
+  document.getElementById('session-my-score').textContent     = getTotalScore(session, name) + ' pts';
+  document.getElementById('session-code-display').textContent = session.code;
 
-  // Barre de progression
   const answered = session.wines.filter(w => {
     const a = (taster.answers||{})[w.id]; return a && (a.producer||a.appellation||a.millesime);
   }).length;
@@ -703,19 +750,19 @@ function renderSessionScreen() {
     list.appendChild(div);
   });
 
-  // Ouvrir le premier non-répondu si rien n'est ouvert
   if (!openIds.size) {
     const first = session.wines.find(w => {
-      const a=(taster.answers||{})[w.id]; return !w.revealed&&(!a||(!a.producer&&!a.appellation&&!a.millesime));
+      const a=(taster.answers||{})[w.id];
+      return !w.revealed && (!a||(!a.producer&&!a.appellation&&!a.millesime));
     });
     if (first) document.getElementById('body_'+first.id)?.classList.add('open');
   }
 }
 
-// Corps du vin révélé — vue organisateur (avec la vraie réponse)
+/* Vue organisateur après révélation : montre la vraie réponse + comparaison */
 function bodyHost(secret, ans, pts) {
-  const pOk = producerMatches(secret.producer, ans.producer);
-  const aOk = norm(secret.appellation) && norm(secret.appellation)===norm(ans.appellation);
+  const pOk = norm(secret.producer)    && fuzzyMatch(secret.producer,    ans.producer);
+  const aOk = norm(secret.appellation) && fuzzyMatch(secret.appellation, ans.appellation);
   let mPts=0, mCls='';
   if (secret.millesime&&ans.millesime) {
     const d=Math.abs(secret.millesime-parseInt(ans.millesime));
@@ -741,7 +788,7 @@ function bodyHost(secret, ans, pts) {
     <div style="text-align:right;margin-top:8px;"><span class="pts-badge">+${pts} pts</span></div>`;
 }
 
-// Corps du vin révélé — vue dégustateur (sans la vraie réponse)
+/* Vue dégustateur après révélation : ses réponses + points seulement */
 function bodyTaster(ans, pts) {
   return `
     <p class="text-muted" style="font-size:11px;margin-bottom:8px;">Vos réponses</p>
@@ -756,116 +803,37 @@ function bodyTaster(ans, pts) {
 function toggleWine(id) { document.getElementById('body_'+id)?.classList.toggle('open'); }
 
 /* ════════════════════════════════════════
-   SAUVEGARDER RÉPONSE (debounce)
+   SAUVEGARDER RÉPONSE
+   Fix #5 : updateDoc avec l'objet complet pour éviter
+   les champs manquants sur les paths imbriqués
 ════════════════════════════════════════ */
 const saveTimers = {};
 function saveAnswer(wineId, field, value) {
   if (!currentUser||!currentSession) return;
   const { name, sessionCode } = currentUser;
-  if (!currentSession.tasters[name]) currentSession.tasters[name]={answers:{}};
-  if (!currentSession.tasters[name].answers[wineId]) currentSession.tasters[name].answers[wineId]={};
+  if (!currentSession.tasters[name])              currentSession.tasters[name] = { answers:{} };
+  if (!currentSession.tasters[name].answers[wineId]) currentSession.tasters[name].answers[wineId] = {};
+
   const v = field==='millesime' ? (parseInt(value)||null) : value;
   currentSession.tasters[name].answers[wineId][field] = v;
 
-  // Progress locale
+  // Barre de progression locale
   const a = currentSession.tasters[name].answers;
-  const answered = currentSession.wines.filter(w=>{const x=a[w.id];return x&&(x.producer||x.appellation||x.millesime);}).length;
-  document.getElementById('session-progress').style.width=(answered/currentSession.wines.length*100)+'%';
+  const answered = currentSession.wines.filter(w => { const x=a[w.id]; return x&&(x.producer||x.appellation||x.millesime); }).length;
+  document.getElementById('session-progress').style.width = (answered/currentSession.wines.length*100)+'%';
 
+  // Debounce + écriture objet complet (fix path imbriqué)
   clearTimeout(saveTimers[wineId+field]);
-  saveTimers[wineId+field] = setTimeout(async()=>{
-    try { await updateDoc(sRef(sessionCode),{[`tasters.${name}.answers.${wineId}.${field}`]:v}); }
-    catch(e){ console.warn('save err',e); }
+  saveTimers[wineId+field] = setTimeout(async () => {
+    try {
+      await updateDoc(sRef(sessionCode), {
+        [`tasters.${name}.answers.${wineId}`]: {
+          ...currentSession.tasters[name].answers[wineId],
+          [field]: v
+        }
+      });
+    } catch(e) { console.warn('saveAnswer error', e); }
   }, 600);
-}
-
-/* ════════════════════════════════════════
-   CALCUL DES SCORES
-   Les points sont calculés par l'organisateur au moment
-   de la révélation et écrits dans session.scores.
-   Les dégustateurs ne peuvent pas calculer eux-mêmes
-   car ils n'ont pas accès aux secrets.
-════════════════════════════════════════ */
-const norm = s => (s||'').trim().toLowerCase();
-
-function normalizeProducer(str) {
-  return norm(str)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\b(domaine|domaines|dom|clos|chateau|mas|vignoble|vignobles)\b/g, "")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function levenshtein(a, b) {
-  const matrix = [];
-
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
-  }
-
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
-  }
-
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1
-        );
-      }
-    }
-  }
-
-  return matrix[b.length][a.length];
-}
-
-function producerMatches(secretProducer, guessProducer) {
-  const a = normalizeProducer(secretProducer);
-  const b = normalizeProducer(guessProducer);
-
-  if (!a || !b) return false;
-
-  if (a === b) return true;
-
-  if (a.includes(b) || b.includes(a)) return true;
-
-  const distance = levenshtein(a, b);
-
-  if (a.length <= 6) return distance <= 1;
-  if (a.length <= 12) return distance <= 2;
-
-  return distance <= 3;
-}
-
-function computeWineScore(secret, guess) {
-  if (!secret || !guess) return 0;
-
-  let pts = 0;
-
-  if (producerMatches(secret.producer, guess.producer)) {
-    pts += 5;
-  }
-
-  const norm = s => (s || '').trim().toLowerCase();
-
-  if (norm(secret.appellation) && norm(secret.appellation) === norm(guess.appellation)) {
-    pts += 3;
-  }
-
-  if (secret.millesime && guess.millesime) {
-    const d = Math.abs(secret.millesime - parseInt(guess.millesime));
-    if (d === 0) pts += 2;
-    else if (d === 1) pts += 1;
-  }
-
-  return pts;
 }
 
 /* ════════════════════════════════════════
@@ -884,9 +852,8 @@ function renderScores() {
   const rev = session.wines.filter(w=>w.revealed).length;
   document.getElementById('scores-revealed-info').textContent= `${rev} / ${session.wines.length} vins révélés`;
 
-  // Classement
   const tasters = Object.keys(session.tasters);
-  const ranked  = tasters.map(n=>({name:n,score:getTotalScore(session,n)})).sort((a,b)=>b.score-a.score);
+  const ranked  = tasters.map(n=>({name:n, score:getTotalScore(session,n)})).sort((a,b)=>b.score-a.score);
   document.getElementById('scores-ranking-body').innerHTML = ranked.map((t,i)=>`
     <tr style="${t.name===name?'background:rgba(107,26,42,.3);':''}">
       <td><span class="rank rank-${i+1}">${['🥇','🥈','🥉'][i]||i+1}</span></td>
@@ -894,18 +861,17 @@ function renderScores() {
       <td style="text-align:right;"><span class="pts-badge">${t.score} pts</span></td>
     </tr>`).join('');
 
-  // Détail vins révélés
   const revWines = session.wines.filter(w=>w.revealed);
   const det = document.getElementById('scores-wines-detail');
   if (!revWines.length) {
-    det.innerHTML='<p class="text-muted" style="font-size:13px;">Aucun vin révélé pour l\'instant.</p>';
+    det.innerHTML = '<p class="text-muted" style="font-size:13px;margin-bottom:16px;">Aucun vin révélé pour l\'instant.</p>';
   } else {
     det.innerHTML = revWines.map(w => {
-      const secret = currentSecrets?.[w.id];
+      const secret  = currentSecrets?.[w.id];
       const ansLine = secret
         ? `<div class="text-muted" style="font-size:12px;margin-bottom:10px;">${secret.producer||'?'} · ${secret.appellation||'?'} · ${secret.millesime||'?'}</div>`
         : `<div class="text-muted" style="font-size:12px;margin-bottom:10px;font-style:italic;">Réponse visible uniquement pour l'organisateur</div>`;
-      const rows = tasters.map(n=>{
+      const rows = tasters.map(n => {
         const a=(session.tasters[n].answers||{})[w.id]||{};
         const p=session.scores?.[n]?.[w.id]??0;
         return `<tr>
@@ -929,14 +895,13 @@ function renderScores() {
     }).join('');
   }
 
-  // Contrôles organisateur
   const isHost = role==='host';
-  document.getElementById('host-controls').style.display     = isHost?'block':'none';
-  document.getElementById('nav-reveal').style.display        = isHost?'inline-block':'none';
+  document.getElementById('host-controls').style.display  = isHost ? 'block' : 'none';
+  document.getElementById('nav-reveal').style.display     = isHost ? 'inline-block' : 'none';
   if (isHost) {
     const unrevealed = session.wines.filter(w=>!w.revealed);
-    const goBtn      = document.getElementById('host-go-reveal-btn');
-    const sumDiv     = document.getElementById('host-reveal-summary');
+    const goBtn  = document.getElementById('host-go-reveal-btn');
+    const sumDiv = document.getElementById('host-reveal-summary');
     if (!unrevealed.length) {
       goBtn.style.display='none';
       sumDiv.innerHTML='<p class="text-muted" style="font-size:13px;">✓ Tous les vins ont été révélés.</p>';
@@ -969,10 +934,10 @@ function renderRevealScreen() {
 
   const wine = unrevealed[0];
   revealIdx  = session.wines.indexOf(wine);
-  document.getElementById('reveal-counter').textContent      = `${session.wines.length-unrevealed.length+1} / ${session.wines.length}`;
-  document.getElementById('reveal-waiting-label').textContent= wine.label;
+  document.getElementById('reveal-counter').textContent       = `${session.wines.length-unrevealed.length+1} / ${session.wines.length}`;
+  document.getElementById('reveal-waiting-label').textContent = wine.label;
 
-  document.getElementById('reveal-tasters-status').innerHTML = Object.keys(session.tasters).map(n=>{
+  document.getElementById('reveal-tasters-status').innerHTML = Object.keys(session.tasters).map(n => {
     const a=(session.tasters[n].answers||{})[wine.id]||{};
     const has=a.producer||a.appellation||a.millesime;
     return `<div class="flex-between" style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);">
@@ -996,26 +961,24 @@ async function doReveal() {
     const secret  = currentSecrets[wine.id];
     const tasters = Object.keys(session.tasters);
 
-    // Calculer et préparer l'écriture des scores
     const updates = {};
-    tasters.forEach(n=>{
+    tasters.forEach(n => {
       const guess = (session.tasters[n].answers||{})[wine.id]||{};
       updates[`scores.${n}.${wine.id}`] = computeWineScore(secret, guess);
     });
 
-    // Marquer révélé + scores en un seul write
-    const updWines = session.wines.map((w,i)=>i===revealIdx?{...w,revealed:true}:w);
+    const updWines = session.wines.map((w,i) => i===revealIdx ? {...w, revealed:true} : w);
     await updateDoc(sRef(currentUser.sessionCode), { wines:updWines, ...updates });
 
-    hideLoading();
-    // Mise à jour locale (le listener onSnapshot le fera aussi, mais ça évite le flash)
+    // Mise à jour locale immédiate
     currentSession = { ...session, wines:updWines };
     if (!currentSession.scores) currentSession.scores={};
-    tasters.forEach(n=>{
+    tasters.forEach(n => {
       if (!currentSession.scores[n]) currentSession.scores[n]={};
       currentSession.scores[n][wine.id] = updates[`scores.${n}.${wine.id}`];
     });
 
+    hideLoading();
     document.getElementById('reveal-waiting').style.display='none';
     document.getElementById('reveal-result').style.display='block';
     renderRevealResult(currentSession, wine.id);
@@ -1026,18 +989,18 @@ function renderRevealResult(session, wineId) {
   const secret  = currentSecrets?.[wineId]||{};
   const tasters = Object.keys(session.tasters);
 
-  document.getElementById('reveal-answer-producer').textContent    = secret.producer||'—';
-  document.getElementById('reveal-answer-appellation').textContent = secret.appellation||'—';
-  document.getElementById('reveal-answer-millesime').textContent   = secret.millesime||'—';
+  document.getElementById('reveal-answer-producer').textContent    = secret.producer    || '—';
+  document.getElementById('reveal-answer-appellation').textContent = secret.appellation || '—';
+  document.getElementById('reveal-answer-millesime').textContent   = secret.millesime   || '—';
 
   const wineScores = tasters.map(n=>({
     name:n, ans:(session.tasters[n].answers||{})[wineId]||{},
     pts:session.scores?.[n]?.[wineId]??0
   })).sort((a,b)=>b.pts-a.pts);
 
-  document.getElementById('reveal-scores-list').innerHTML = wineScores.map(t=>{
-    const pOk = producerMatches(secret.producer, t.ans.producer);
-    const aOk = norm(secret.appellation)&&norm(secret.appellation)===norm(t.ans.appellation);
+  document.getElementById('reveal-scores-list').innerHTML = wineScores.map(t => {
+    const pOk = norm(secret.producer)    && fuzzyMatch(secret.producer,    t.ans.producer);
+    const aOk = norm(secret.appellation) && fuzzyMatch(secret.appellation, t.ans.appellation);
     let mPts=0;
     if(secret.millesime&&t.ans.millesime){
       const d=Math.abs(secret.millesime-parseInt(t.ans.millesime));
@@ -1065,14 +1028,14 @@ function renderRevealResult(session, wineId) {
     </tr>`).join('');
 
   const rem = session.wines.filter(w=>!w.revealed).length;
-  document.getElementById('reveal-next-btn').innerHTML = rem>0
+  document.getElementById('reveal-next-btn').innerHTML = rem > 0
     ? `<button class="btn btn-gold" style="font-size:15px;padding:13px 32px;" onclick="nextReveal()">Vin suivant (${rem} restant${rem>1?'s':''}) →</button>`
     : `<p style="color:var(--or);font-family:'Playfair Display',serif;font-size:18px;margin-bottom:12px;">🏆 Dégustation terminée !</p>
        <button class="btn btn-primary" onclick="showScreen('scores')">Voir le classement final</button>`;
 }
 
 function nextReveal() {
-  revealIdx=null;
+  revealIdx = null;
   document.getElementById('reveal-waiting').style.display='block';
   document.getElementById('reveal-result').style.display='none';
   renderRevealScreen();
@@ -1095,10 +1058,9 @@ async function renderHistory() {
       return;
     }
 
-    // Stats globales
     const totals={};
-    sessions.forEach(s=>{
-      Object.keys(s.tasters).forEach(n=>{
+    sessions.forEach(s => {
+      Object.keys(s.tasters).forEach(n => {
         if(!totals[n]) totals[n]={sessions:0,points:0,wins:0};
         totals[n].sessions++;
         totals[n].points+=getTotalScore(s,n);
@@ -1107,6 +1069,7 @@ async function renderHistory() {
       });
     });
     const sorted=Object.entries(totals).sort((a,b)=>b[1].points-a[1].points);
+
     document.getElementById('history-global-stats').innerHTML=`
       <div class="card card-dark">
         <h3 style="margin-bottom:12px;">Classement toutes sessions</h3>
@@ -1191,9 +1154,7 @@ async function showHistoryDetail(code) {
       </div>`;
     });
 
-    if(s.status==='active') {
-      html+=`<button class="btn btn-primary btn-full" onclick="rejoinFromHistory('${code}')">↩ Reprendre cette session</button>`;
-    }
+    if(s.status==='active') html+=`<button class="btn btn-primary btn-full" onclick="rejoinFromHistory('${code}')">↩ Reprendre cette session</button>`;
     document.getElementById('history-session-detail-content').innerHTML=html;
     document.getElementById('history-session-detail').style.display='block';
     document.getElementById('history-list').style.display='none';
@@ -1244,7 +1205,7 @@ function leaveSession() {
 
 async function endSession() {
   if(!currentUser||currentUser.role!=='host') return;
-  if(!confirm('Clore définitivement cette session ? Les vins non révélés ne seront pas calculés.')) return;
+  if(!confirm('Clore définitivement cette session ?')) return;
   showLoading('Clôture…');
   try {
     await updateDoc(sRef(currentUser.sessionCode),{status:'closed'});
@@ -1272,6 +1233,28 @@ if(currentUser?.sessionCode) {
     }
   }).catch(()=>hideLoading());
 }
+
+/* ════════════════════════════════════════
+   EXPOSITION — Fix #4 : window.* en bas,
+   après toutes les déclarations de fonctions
+════════════════════════════════════════ */
+window.showScreen        = showScreen;
+window.addWineRow        = addWineRow;
+window.addWineRowRemove  = addWineRowRemove;
+window.createSession     = createSession;
+window.joinSession       = joinSession;
+window.toggleWine        = toggleWine;
+window.saveAnswer        = saveAnswer;
+window.renderScores      = renderScores;
+window.doReveal          = doReveal;
+window.nextReveal        = nextReveal;
+window.leaveSession      = leaveSession;
+window.copySessionCode   = copySessionCode;
+window.renderHistory     = renderHistory;
+window.backToHistoryList = backToHistoryList;
+window.endSession        = endSession;
+window.rejoinFromHistory = rejoinFromHistory;
+window.showHistoryDetail = showHistoryDetail;
 
 </script>
 </body>
