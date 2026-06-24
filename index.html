@@ -981,8 +981,9 @@ async function doReveal() {
       updates[`scores.${n}.${wine.id}`] = computeWineScore(secret, guess);
     });
 
-    const updWines = session.wines.map((w,i) => i===revealIdx ? {...w, revealed:true} : w);
-    await updateDoc(sRef(currentUser.sessionCode), { wines:updWines, ...updates });
+  const updWines = session.wines.map((w,i) =>
+  i===revealIdx ? {...w, revealed:true} : w
+  );
 
     // Mise à jour locale immédiate
     currentSession = { ...session, wines:updWines };
@@ -1163,13 +1164,6 @@ async function renderHistory() {
 
   </div>
 </div>`;
-          <div>
-            <div class="session-tile-name">${s.name}</div>
-            <div class="session-tile-meta">${date} · ${Object.keys(s.tasters).length} joueur(s) · ${rev}/${s.wines.length} vins</div>
-            ${top?`<div style="font-size:12px;color:var(--or);margin-top:3px;">🏆 ${top} — ${getTotalScore(s,top)} pts</div>`:''}
-          </div>
-          <span class="pill ${s.status==='active'?'pill-ok':'pill-no'}">${s.status==='active'?'En cours':'Terminée'}</span>
-        </div>`;
       }).join('')}`;
   } catch(e) {
     document.getElementById('history-list').innerHTML=`<p class="text-muted">Erreur : ${e.message}</p>`;
