@@ -1,114 +1,388 @@
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0047)file:///C:/Users/augus/Downloads/la-cave_1.html -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Cave — Dégustation à l'aveugle</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./La Cave — Dégustation à l&#39;aveugle_files/css2" rel="stylesheet">
 <style>
-:root {
-  --noir:#1A0A0A; --bordeaux:#6B1A2A; --bordeaux-light:#8B2235;
-  --or:#C9A96E; --or-light:#E8C98A; --parchemin:#F5F0E8;
-  --brun:#3D2B1F; --brun-light:#5C4033; --gris:#8A8078; --success:#2D6A4F;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Inter',sans-serif;background:var(--noir);color:var(--parchemin);min-height:100vh;font-size:15px;line-height:1.5;}
+  :root {
+    --noir: #1A0A0A;
+    --bordeaux: #6B1A2A;
+    --bordeaux-light: #8B2235;
+    --or: #C9A96E;
+    --or-light: #E8C98A;
+    --parchemin: #F5F0E8;
+    --parchemin-dark: #EDE6D6;
+    --brun: #3D2B1F;
+    --brun-light: #5C4033;
+    --gris: #8A8078;
+    --blanc: #FEFCF8;
+    --success: #2D6A4F;
+    --success-bg: #D8F3DC;
+  }
 
-/* HEADER */
-.app-header{background:var(--noir);border-bottom:1px solid var(--bordeaux);position:sticky;top:0;z-index:100;}
-.header-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;max-width:640px;margin:0 auto;}
-.logo{font-family:'Playfair Display',serif;font-size:22px;color:var(--or);}
-.logo span{font-style:italic;color:var(--or-light);}
-.nav-tabs{display:flex;gap:3px;flex-wrap:wrap;}
-.nav-tab{background:transparent;border:none;color:var(--gris);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;padding:6px 10px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.nav-tab.active{background:var(--bordeaux);color:var(--or-light);}
-.nav-tab:hover:not(.active){background:var(--brun);color:var(--parchemin);}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* LAYOUT */
-.app-main{max-width:640px;margin:0 auto;padding:20px 16px 60px;}
-.screen{display:none;} .screen.active{display:block;}
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--noir);
+    color: var(--parchemin);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.5;
+  }
 
-/* CARDS */
-.card{background:var(--brun);border:1px solid var(--brun-light);border-radius:12px;padding:20px;margin-bottom:16px;}
-.card-dark{background:#120608;border-color:var(--bordeaux);}
+  /* ─── HEADER ─── */
+  .app-header {
+    background: var(--noir);
+    border-bottom: 1px solid var(--bordeaux);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--or);
+    letter-spacing: 0.03em;
+  }
+  .logo span { font-style: italic; color: var(--or-light); }
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .nav-tab {
+    background: transparent;
+    border: none;
+    color: var(--gris);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-tab.active { background: var(--bordeaux); color: var(--or-light); }
+  .nav-tab:hover:not(.active) { background: var(--brun); color: var(--parchemin); }
 
-h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--or);margin-bottom:16px;}
-h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--or-light);margin-bottom:12px;}
+  /* ─── LAYOUT ─── */
+  .app-main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+  }
 
-/* FORMS */
-.form-group{margin-bottom:14px;}
-label{display:block;font-size:11px;font-weight:600;color:var(--or);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
-input[type=text],input[type=number],input[type=password]{
-  width:100%;background:var(--noir);border:1px solid var(--brun-light);border-radius:8px;
-  color:var(--parchemin);font-family:'Inter',sans-serif;font-size:15px;padding:10px 14px;outline:none;transition:border-color .2s;
-}
-input:focus{border-color:var(--or);}
+  /* ─── SCREENS ─── */
+  .screen { display: none; }
+  .screen.active { display: block; }
 
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 24px;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
-.btn-primary{background:var(--bordeaux);color:var(--or-light);border:1px solid var(--bordeaux-light);}
-.btn-primary:hover{background:var(--bordeaux-light);}
-.btn-gold{background:var(--or);color:var(--noir);}
-.btn-gold:hover{background:var(--or-light);}
-.btn-ghost{background:transparent;color:var(--gris);border:1px solid var(--brun-light);}
-.btn-ghost:hover{border-color:var(--or);color:var(--or);}
-.btn-danger{background:#5C1A1A;color:#FFAAAA;border:1px solid #8B2222;}
-.btn-danger:hover{background:#8B2222;}
-.btn-sm{padding:7px 14px;font-size:13px;}
-.btn-full{width:100%;}
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--brun);
+    border: 1px solid var(--brun-light);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-or {
+    background: var(--bordeaux);
+    border-color: var(--bordeaux-light);
+  }
+  .card-dark {
+    background: #120608;
+    border-color: var(--bordeaux);
+  }
 
-/* BADGES & PILLS */
-.pts-badge{display:inline-block;background:var(--bordeaux);color:var(--or-light);font-weight:700;font-size:13px;padding:3px 10px;border-radius:20px;border:1px solid var(--or);}
-.pts-badge.big{font-size:20px;padding:6px 16px;}
-.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;}
-.pill-ok{background:rgba(45,106,79,.25);color:#6FCF97;border:1px solid #2D6A4F;}
-.pill-warn{background:rgba(201,169,110,.2);color:var(--or-light);border:1px solid var(--or);}
-.pill-no{background:rgba(139,34,53,.2);color:#F4A5B5;border:1px solid #8B2235;}
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--or);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: var(--or-light);
+    margin-bottom: 12px;
+  }
 
-/* WINE ITEMS */
-.wine-item{border:1px solid var(--brun-light);border-radius:10px;margin-bottom:10px;overflow:hidden;}
-.wine-item-header{display:flex;align-items:center;padding:12px 16px;background:#120608;cursor:pointer;}
-.wine-num{font-family:'Playfair Display',serif;font-size:18px;color:var(--or);margin-right:12px;min-width:28px;}
-.wine-item-title{flex:1;font-size:14px;}
-.wine-item-status{font-size:12px;color:var(--gris);margin-left:10px;}
-.wine-item-body{padding:16px;background:var(--brun);display:none;}
-.wine-item-body.open{display:block;}
+  /* ─── FORMS ─── */
+  .form-group { margin-bottom: 14px; }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--or);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  input[type=text], input[type=number], select, textarea {
+    width: 100%;
+    background: var(--noir);
+    border: 1px solid var(--brun-light);
+    border-radius: 8px;
+    color: var(--parchemin);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type=text]:focus, input[type=number]:focus, select:focus, textarea:focus {
+    border-color: var(--or);
+  }
+  select option { background: var(--noir); }
+  textarea { resize: vertical; min-height: 70px; }
 
-/* SCORE TABLE */
-.score-table{width:100%;border-collapse:collapse;font-size:14px;}
-.score-table th{text-align:left;font-size:11px;font-weight:600;color:var(--or);text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;border-bottom:1px solid var(--brun-light);}
-.score-table td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top;}
-.score-table tr:last-child td{border-bottom:none;}
-.rank{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;}
-.rank-1{color:#FFD700;} .rank-2{color:#C0C0C0;} .rank-3{color:#CD7F32;}
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 24px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--bordeaux);
+    color: var(--or-light);
+    border: 1px solid var(--bordeaux-light);
+  }
+  .btn-primary:hover { background: var(--bordeaux-light); }
+  .btn-gold {
+    background: var(--or);
+    color: var(--noir);
+  }
+  .btn-gold:hover { background: var(--or-light); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--gris);
+    border: 1px solid var(--brun-light);
+  }
+  .btn-ghost:hover { border-color: var(--or); color: var(--or); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+  .btn-danger { background: #5C1A1A; color: #FFAAAA; border: 1px solid #8B2222; }
+  .btn-danger:hover { background: #8B2222; }
+  .btn-full { width: 100%; }
 
-/* REVEAL ROWS */
-.reveal-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px;background:rgba(255,255,255,.04);}
-.reveal-row.correct{background:rgba(45,106,79,.2);border:1px solid #2D6A4F;}
-.reveal-row.partial{background:rgba(201,169,110,.15);border:1px solid var(--or);}
-.reveal-row .field-label{color:var(--gris);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
-.reveal-row .pts-got{color:var(--or);font-weight:700;}
+  /* ─── POINTS BADGE ─── */
+  .pts-badge {
+    display: inline-block;
+    background: var(--bordeaux);
+    color: var(--or-light);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--or);
+  }
+  .pts-badge.big {
+    font-size: 20px;
+    padding: 6px 16px;
+  }
 
-/* MISC */
-.flex-between{display:flex;justify-content:space-between;align-items:center;}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.text-muted{color:var(--gris);font-size:13px;}
-.text-or{color:var(--or);}
-.mt-8{margin-top:8px;} .mt-16{margin-top:16px;}
-.divider{border:none;border-top:1px solid var(--brun-light);margin:20px 0;}
-.progress-bar-outer{width:100%;height:4px;background:var(--brun);border-radius:2px;margin-bottom:20px;overflow:hidden;}
-.progress-bar-inner{height:100%;background:var(--bordeaux);border-radius:2px;transition:width .4s ease;}
-.session-tile{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#120608;border:1px solid var(--brun-light);border-radius:10px;margin-bottom:10px;cursor:pointer;transition:border-color .2s;}
-.session-tile:hover{border-color:var(--or);}
-.session-tile-name{font-family:'Playfair Display',serif;font-size:16px;}
-.session-tile-meta{font-size:12px;color:var(--gris);margin-top:3px;}
-.empty-state{text-align:center;padding:40px 20px;color:var(--gris);}
-.empty-state .big-icon{font-size:48px;margin-bottom:12px;opacity:.4;}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:12px 24px;border-radius:24px;font-size:14px;font-weight:500;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
-.toast.show{opacity:1;}
-.hint{font-size:11px;color:var(--gris);margin-top:5px;line-height:1.4;}
-@keyframes spin{to{transform:rotate(360deg);}}
+  /* ─── WINE ITEM ─── */
+  .wine-item {
+    border: 1px solid var(--brun-light);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .wine-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #120608;
+    cursor: pointer;
+  }
+  .wine-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--or);
+    margin-right: 12px;
+    min-width: 28px;
+  }
+  .wine-item-title { flex: 1; font-size: 14px; color: var(--parchemin); }
+  .wine-item-status { font-size: 12px; color: var(--gris); margin-left: 10px; }
+  .wine-item-body { padding: 16px; background: var(--brun); display: none; }
+  .wine-item-body.open { display: block; }
+
+  /* ─── SCORE TABLE ─── */
+  .score-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .score-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--or);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--brun-light);
+  }
+  .score-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--parchemin);
+    vertical-align: top;
+  }
+  .score-table tr:last-child td { border-bottom: none; }
+  .score-table .rank {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--or);
+    font-weight: 600;
+  }
+  .rank-1 { color: #FFD700; }
+  .rank-2 { color: #C0C0C0; }
+  .rank-3 { color: #CD7F32; }
+
+  /* ─── REVEAL ROW ─── */
+  .reveal-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    background: rgba(255,255,255,0.04);
+  }
+  .reveal-row.correct { background: rgba(45,106,79,0.2); border: 1px solid #2D6A4F; }
+  .reveal-row.partial { background: rgba(201,169,110,0.15); border: 1px solid var(--or); }
+  .reveal-row .field-label { color: var(--gris); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .reveal-row .field-val { font-weight: 500; }
+  .reveal-row .pts-got { color: var(--or); font-weight: 700; }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--brun-light);
+    margin: 20px 0;
+  }
+
+  /* ─── SESSION TILE ─── */
+  .session-tile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #120608;
+    border: 1px solid var(--brun-light);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .session-tile:hover { border-color: var(--or); }
+  .session-tile-name { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--parchemin); }
+  .session-tile-meta { font-size: 12px; color: var(--gris); margin-top: 3px; }
+
+  /* ─── MISC ─── */
+  .text-muted { color: var(--gris); font-size: 13px; }
+  .text-or { color: var(--or); }
+  .text-center { text-align: center; }
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .flex { display: flex; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+  .flex-center { display: flex; align-items: center; gap: 10px; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gris);
+  }
+  .empty-state .big-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--success);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  .progress-bar-outer {
+    width: 100%;
+    height: 4px;
+    background: var(--brun);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-bar-inner {
+    height: 100%;
+    background: var(--bordeaux);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .pill-ok { background: rgba(45,106,79,0.25); color: #6FCF97; border: 1px solid #2D6A4F; }
+  .pill-warn { background: rgba(201,169,110,0.2); color: var(--or-light); border: 1px solid var(--or); }
+  .pill-no { background: rgba(139,34,53,0.2); color: #F4A5B5; border: 1px solid #8B2235; }
+
+  /* Role selector */
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .role-card {
+    background: #120608;
+    border: 2px solid var(--brun-light);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .role-card:hover, .role-card.selected { border-color: var(--or); }
+  .role-card.selected { background: var(--brun); }
+  .role-card .role-icon { font-size: 32px; margin-bottom: 8px; }
+  .role-card .role-name { font-weight: 600; font-size: 14px; color: var(--parchemin); }
+  .role-card .role-desc { font-size: 12px; color: var(--gris); margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -117,316 +391,373 @@ input:focus{border-color:var(--or);}
   <div class="header-inner">
     <div class="logo">La <span>Cave</span></div>
     <nav class="nav-tabs">
-      <button class="nav-tab active" onclick="showScreen('home')">Accueil</button>
-      <button class="nav-tab" onclick="showScreen('session')">Session</button>
-      <button class="nav-tab" onclick="showScreen('scores')">Scores</button>
-      <button class="nav-tab" id="nav-reveal" style="display:none" onclick="showScreen('reveal')">🔓 Révéler</button>
-      <button class="nav-tab" onclick="showScreen('history')">Historique</button>
+      <button class="nav-tab active" onclick="showScreen(&#39;home&#39;)">Accueil</button>
+      <button class="nav-tab" onclick="showScreen(&#39;session&#39;)">Session</button>
+      <button class="nav-tab" onclick="showScreen(&#39;scores&#39;)">Scores</button>
+      <button class="nav-tab" id="nav-reveal" onclick="showScreen(&#39;reveal&#39;)" style="display:none;">🔓 Révéler</button>
+      <button class="nav-tab" onclick="showScreen(&#39;history&#39;)">Historique</button>
     </nav>
   </div>
 </header>
 
 <main class="app-main">
 
-<!-- ═══════════════ ACCUEIL ═══════════════ -->
-<section class="screen active" id="screen-home">
-  <div class="card card-dark" style="text-align:center;padding:36px 24px 28px;">
-    <div style="font-size:52px;margin-bottom:12px;">🍷</div>
-    <h2 style="font-size:28px;margin-bottom:8px;">Dégustation à l'aveugle</h2>
-    <p class="text-muted" style="max-width:320px;margin:0 auto 24px;">Devinez le producteur, l'appellation et le millésime — comparez-vous à vos convives en temps réel.</p>
-    <div style="display:flex;flex-direction:column;gap:10px;max-width:280px;margin:0 auto;">
-      <button class="btn btn-gold btn-full" onclick="showScreen('home-create')">✦ Créer une session</button>
-      <button class="btn btn-primary btn-full" onclick="showScreen('home-join')">Rejoindre une session</button>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Barème de points</h3>
-    <div class="grid-2">
-      <div class="reveal-row correct" style="flex-direction:column;gap:2px;">
-        <span class="field-label">Producteur exact</span>
-        <div class="flex-between"><span>Correct</span><span class="pts-got">+5 pts</span></div>
-      </div>
-      <div class="reveal-row partial" style="flex-direction:column;gap:2px;">
-        <span class="field-label">Appellation exacte</span>
-        <div class="flex-between"><span>Correct</span><span class="pts-got">+3 pts</span></div>
-      </div>
-      <div class="reveal-row correct" style="flex-direction:column;gap:2px;">
-        <span class="field-label">Millésime exact</span>
-        <div class="flex-between"><span>Exact</span><span class="pts-got">+2 pts</span></div>
-      </div>
-      <div class="reveal-row partial" style="flex-direction:column;gap:2px;">
-        <span class="field-label">Millésime ±1 an</span>
-        <div class="flex-between"><span>Proche</span><span class="pts-got">+1 pt</span></div>
+  <!-- ═══════════════════════════════════
+       ÉCRAN ACCUEIL
+  ═══════════════════════════════════════ -->
+  <section class="screen active" id="screen-home">
+    <div class="card card-dark" style="text-align:center;padding:36px 24px 28px;">
+      <div style="font-size:52px;margin-bottom:12px;">🍷</div>
+      <h2 style="font-size:28px;margin-bottom:8px;">Dégustation à l'aveugle</h2>
+      <p class="text-muted" style="max-width:320px;margin:0 auto 24px;">Devinez le producteur, l'appellation et le millésime de chaque vin — et comparez-vous à vos convives.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:280px;margin:0 auto;">
+        <button class="btn btn-gold btn-full" onclick="showScreen(&#39;home-create&#39;)">✦ Créer une session</button>
+        <button class="btn btn-primary btn-full" onclick="showScreen(&#39;home-join&#39;)">Rejoindre une session</button>
       </div>
     </div>
-  </div>
-  <div class="card">
-    <h3>Comment ça marche ?</h3>
-    <ol style="padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:14px;">
-      <li>L'<strong style="color:var(--or)">organisateur</strong> crée une session avec un mot de passe secret et saisit les vins</li>
-      <li>Les <strong style="color:var(--or)">dégustateurs</strong> rejoignent via le code à 4 lettres, sans mot de passe</li>
-      <li>Chacun saisit ses réponses vin par vin sur son téléphone</li>
-      <li>L'organisateur révèle les vins un à un — les points sont calculés à ce moment</li>
-      <li>Les scores se mettent à jour en temps réel sur tous les appareils</li>
-    </ol>
-  </div>
-</section>
 
-<!-- ═══════════════ CRÉER SESSION ═══════════════ -->
-<section class="screen" id="screen-home-create">
-  <div class="flex-between" style="margin-bottom:20px;">
-    <button class="btn btn-ghost btn-sm" onclick="showScreen('home')">← Retour</button>
-    <h2 style="margin:0;font-size:18px;">Nouvelle session</h2>
-    <div style="width:80px;"></div>
-  </div>
-  <div class="card">
-    <div class="form-group">
-      <label>Nom de la session</label>
-      <input type="text" id="create-session-name" placeholder="ex : Dîner du 14 juin">
+    <div class="card">
+      <h3>Barème de points</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="reveal-row correct" style="flex-direction:column;gap:2px;">
+          <span class="field-label">Producteur exact</span>
+          <div class="flex-between"><span class="field-val">Correct</span><span class="pts-got">+5 pts</span></div>
+        </div>
+        <div class="reveal-row partial" style="flex-direction:column;gap:2px;">
+          <span class="field-label">Appellation exacte</span>
+          <div class="flex-between"><span class="field-val">Correct</span><span class="pts-got">+3 pts</span></div>
+        </div>
+        <div class="reveal-row correct" style="flex-direction:column;gap:2px;">
+          <span class="field-label">Millésime exact</span>
+          <div class="flex-between"><span class="field-val">Exact</span><span class="pts-got">+2 pts</span></div>
+        </div>
+        <div class="reveal-row partial" style="flex-direction:column;gap:2px;">
+          <span class="field-label">Millésime ± 1 an</span>
+          <div class="flex-between"><span class="field-val">Proche</span><span class="pts-got">+1 pt</span></div>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label>Votre prénom (organisateur)</label>
-      <input type="text" id="create-host-name" placeholder="ex : Pierre">
+
+    <div class="card">
+      <h3>Comment ça marche ?</h3>
+      <ol style="padding-left:18px;color:var(--parchemin);display:flex;flex-direction:column;gap:8px;font-size:14px;">
+        <li>L'<strong style="color:var(--or)">animateur</strong> crée une session et saisit les vins (réponses cachées)</li>
+        <li>Chaque <strong style="color:var(--or)">dégustateur</strong> rejoint la session avec son prénom</li>
+        <li>Tout le monde saisit ses réponses vin par vin</li>
+        <li>L'animateur révèle chaque vin au bon moment</li>
+        <li>Les scores se calculent automatiquement en temps réel</li>
+      </ol>
     </div>
-    <div class="form-group" style="margin-bottom:0;">
-      <label>Mot de passe organisateur</label>
-      <input type="password" id="create-host-password" placeholder="Connu de vous seul">
-      <p class="hint">Seul celui qui connaît ce mot de passe peut révéler les vins et voir les vraies réponses. Les dégustateurs n'y ont pas accès.</p>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       CRÉER UNE SESSION
+  ═══════════════════════════════════════ -->
+  <section class="screen" id="screen-home-create">
+    <div class="flex-between" style="margin-bottom:20px;">
+      <button class="btn btn-ghost btn-sm" onclick="showScreen(&#39;home&#39;)">← Retour</button>
+      <h2 style="margin:0;font-size:18px;">Nouvelle session</h2>
+      <div style="width:80px;"></div>
     </div>
-  </div>
-  <div class="card">
+
+    <div class="card">
+      <div class="form-group">
+        <label>Nom de la session</label>
+        <input type="text" id="create-session-name" placeholder="ex: Dîner du 14 juin">
+      </div>
+      <div class="form-group">
+        <label>Votre prénom (animateur)</label>
+        <input type="text" id="create-host-name" placeholder="ex: Pierre">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:16px;">
+        <h3 style="margin:0;">Vins à déguster</h3>
+        <button class="btn btn-primary btn-sm" onclick="addWineRow()">+ Ajouter</button>
+      </div>
+      <div id="wine-rows-list"></div>
+      <p class="text-muted" id="wines-hint" style="font-size:12px;margin-top:8px;">Ajoutez au moins 1 vin. Les réponses sont cachées aux dégustateurs.</p>
+    </div>
+
+    <button class="btn btn-gold btn-full" onclick="createSession()">Créer la session →</button>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       REJOINDRE UNE SESSION
+  ═══════════════════════════════════════ -->
+  <section class="screen" id="screen-home-join">
+    <div class="flex-between" style="margin-bottom:20px;">
+      <button class="btn btn-ghost btn-sm" onclick="showScreen(&#39;home&#39;)">← Retour</button>
+      <h2 style="margin:0;font-size:18px;">Rejoindre</h2>
+      <div style="width:80px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="form-group">
+        <label>Code de session</label>
+        <input type="text" id="join-code" placeholder="ex: A3F7" style="text-transform:uppercase;letter-spacing:0.1em;font-size:20px;text-align:center;">
+      </div>
+      <div class="form-group">
+        <label>Votre prénom</label>
+        <input type="text" id="join-name" placeholder="ex: Marie">
+      </div>
+      <button class="btn btn-gold btn-full mt-8" onclick="joinSession()">Rejoindre →</button>
+    </div>
+
+    <div id="available-sessions-section">
+      <h3 class="mt-16">Sessions disponibles sur cet appareil</h3>
+      <div id="available-sessions-list"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       SESSION ACTIVE — DÉGUSTATEUR
+  ═══════════════════════════════════════ -->
+  <section class="screen" id="screen-session">
     <div class="flex-between" style="margin-bottom:16px;">
-      <h3 style="margin:0;">Vins à déguster</h3>
-      <button class="btn btn-primary btn-sm" onclick="addWineRow()">+ Ajouter un vin</button>
-    </div>
-    <div id="wine-rows-list"></div>
-    <p class="hint">Les réponses (producteur, appellation, millésime) sont stockées séparément et ne sont jamais visibles par les dégustateurs.</p>
-  </div>
-  <button class="btn btn-gold btn-full" onclick="createSession()">Créer la session →</button>
-</section>
-
-<!-- ═══════════════ REJOINDRE ═══════════════ -->
-<section class="screen" id="screen-home-join">
-  <div class="flex-between" style="margin-bottom:20px;">
-    <button class="btn btn-ghost btn-sm"
-            onclick="showScreen('home')">
-      ← Retour
-    </button>
-    <h2 style="margin:0;font-size:18px;">
-      Rejoindre
-    </h2>
-    <div style="width:80px;"></div>
-  </div>
-  <div class="card">
-    <div class="form-group">
-      <label>Votre prénom</label>
-      <input type="text"
-             id="join-name"
-             placeholder="ex : Marie">
-    </div>
-    <div class="form-group" style="margin-bottom:0;">
-      <label>
-        Mot de passe organisateur
-        <span style="color:var(--gris);font-weight:400;text-transform:none;">
-          (facultatif)
-        </span>
-      </label>
-      <input type="password"
-             id="join-password"
-             placeholder="Laissez vide si vous êtes dégustateur">
-      <p class="hint">
-        Sans mot de passe → dégustateur.
-        Avec le bon mot de passe → organisateur.
-      </p>
-    </div>
-  </div>
-  <div class="card">
-    <div class="flex-between" style="margin-bottom:16px;">
-      <h3 style="margin:0;">
-        Sessions disponibles
-      </h3>
-      <button class="btn btn-ghost btn-sm"
-              onclick="renderAvailableSessions()">
-        ↻
-      </button>
-    </div>
-    <div id="available-sessions-list"
-         style="display:flex;flex-direction:column;gap:10px;">
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════ SESSION ACTIVE ═══════════════ -->
-<section class="screen" id="screen-session">
-  <div class="flex-between" style="margin-bottom:12px;">
-    <div>
-      <div id="session-title" style="font-family:'Playfair Display',serif;font-size:18px;color:var(--or);"></div>
-      <div id="session-player-name" class="text-muted" style="font-size:12px;margin-top:2px;"></div>
-    </div>
-    <div class="pts-badge big" id="session-my-score">0 pts</div>
-  </div>
-  <div class="progress-bar-outer">
-    <div class="progress-bar-inner" id="session-progress" style="width:0%"></div>
-  </div>
-  <div id="session-wines-list"></div>
-  <div class="card card-dark" style="margin-top:16px;text-align:center;">
-    <p class="text-muted" style="font-size:12px;margin-bottom:6px;">Code de la session — partagez-le avec vos convives</p>
-    <div id="session-code-display" style="font-family:'Playfair Display',serif;font-size:40px;letter-spacing:.25em;color:var(--or);margin:4px 0 10px;"></div>
-    <button class="btn btn-ghost btn-sm" onclick="copySessionCode()">📋 Copier le code</button>
-  </div>
-  <div style="margin-top:12px;display:flex;gap:10px;">
-    <button class="btn btn-ghost btn-sm" onclick="leaveSession()" style="flex:1;">Quitter</button>
-    <button class="btn btn-primary btn-sm" onclick="showScreen('scores')" style="flex:1;">Voir les scores →</button>
-  </div>
-</section>
-
-<!-- ═══════════════ SCORES ═══════════════ -->
-<section class="screen" id="screen-scores">
-  <div class="flex-between" style="margin-bottom:20px;">
-    <h2 style="margin:0;">Scores en direct</h2>
-    <button class="btn btn-ghost btn-sm" onclick="renderScores()">↻ Rafraîchir</button>
-  </div>
-  <div id="scores-no-session" class="empty-state">
-    <div class="big-icon">📊</div>
-    <p>Aucune session active.<br>Créez ou rejoignez une session.</p>
-  </div>
-  <div id="scores-content" style="display:none;">
-    <div class="card card-dark" style="margin-bottom:16px;">
-      <div class="flex-between">
-        <div id="scores-session-name" style="font-family:'Playfair Display',serif;font-size:16px;color:var(--or);"></div>
-        <div id="scores-code" class="text-muted" style="font-size:12px;"></div>
+      <div>
+        <div id="session-title" style="font-family:&#39;Playfair Display&#39;,serif;font-size:18px;color:var(--or);"></div>
+        <div id="session-player-name" class="text-muted" style="font-size:12px;margin-top:2px;"></div>
       </div>
-      <div id="scores-revealed-info" class="text-muted" style="font-size:12px;margin-top:6px;"></div>
+      <div class="pts-badge big" id="session-my-score">0 pts</div>
     </div>
-    <div class="card" style="margin-bottom:16px;">
-      <h3>Classement</h3>
-      <table class="score-table">
-        <thead><tr><th style="width:40px;">#</th><th>Dégustateur</th><th style="text-align:right;">Points</th></tr></thead>
-        <tbody id="scores-ranking-body"></tbody>
-      </table>
+
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="session-progress" style="width:0%"></div>
     </div>
-    <div id="scores-wines-detail"></div>
-    <div id="host-controls" style="display:none;">
-      <hr class="divider">
-      <div class="flex-between" style="margin-bottom:12px;">
-        <h3 style="margin:0;">Contrôles organisateur</h3>
-        <button class="btn btn-danger btn-sm" onclick="endSession()">Clore</button>
+
+    <div id="session-wines-list"></div>
+
+    <div class="card" style="margin-top:16px;text-align:center;" id="session-complete-msg">
+      <div style="font-size:32px;margin-bottom:8px;">✓</div>
+      <p style="color:var(--or);font-weight:600;">Toutes vos réponses sont saisies !</p>
+      <p class="text-muted" style="margin-top:8px;font-size:13px;">Attendez que l'animateur révèle les réponses.</p>
+    </div>
+
+    <div class="card card-dark" style="margin-top:16px;text-align:center;" id="session-share-card">
+      <p class="text-muted" style="font-size:12px;margin-bottom:6px;">Invitez vos convives avec ce code</p>
+      <div id="session-code-display" style="font-family:&#39;Playfair Display&#39;,serif;font-size:40px;letter-spacing:0.25em;color:var(--or);margin:4px 0 10px;"></div>
+      <button class="btn btn-ghost btn-sm" onclick="copySessionCode()">📋 Copier le code</button>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:10px;">
+      <button class="btn btn-ghost btn-sm" onclick="leaveSession()" style="flex:1;">Quitter</button>
+      <button class="btn btn-primary btn-sm" onclick="showScreen(&#39;scores&#39;)" style="flex:1;">Voir les scores →</button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       SCORES EN DIRECT
+  ═══════════════════════════════════════ -->
+  <section class="screen" id="screen-scores">
+    <div class="flex-between" style="margin-bottom:20px;">
+      <h2 style="margin:0;">Scores en direct</h2>
+      <button class="btn btn-ghost btn-sm" onclick="refreshScores()">↻ Rafraîchir</button>
+    </div>
+
+    <div id="scores-no-session" class="empty-state">
+      <div class="big-icon">📊</div>
+      <p>Aucune session active.<br>Créez ou rejoignez une session.</p>
+    </div>
+
+    <div id="scores-content" style="display:none;">
+      <div class="card card-dark" style="margin-bottom:16px;">
+        <div class="flex-between">
+          <div id="scores-session-name" style="font-family:&#39;Playfair Display&#39;,serif;font-size:16px;color:var(--or);"></div>
+          <div id="scores-code" class="text-muted" style="font-size:12px;"></div>
+        </div>
+        <div id="scores-revealed-info" class="text-muted" style="font-size:12px;margin-top:6px;"></div>
       </div>
-      <div id="host-reveal-summary"></div>
-      <button class="btn btn-gold btn-full mt-8" id="host-go-reveal-btn" onclick="showScreen('reveal')" style="font-size:15px;padding:13px;">🔓 Révéler le vin suivant</button>
+
+      <!-- Classement -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3>Classement</h3>
+        <table class="score-table" id="scores-ranking-table">
+          <thead>
+            <tr>
+              <th style="width:40px;">#</th>
+              <th>Dégustateur</th>
+              <th style="text-align:right;">Points</th>
+            </tr>
+          </thead>
+          <tbody id="scores-ranking-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Détail par vin révélé -->
+      <div id="scores-reveal-section">
+        <h3 class="text-or" style="margin-bottom:12px;">Détail des vins révélés</h3>
+        <div id="scores-wines-detail"></div>
+      </div>
+
+      <!-- Animateur : contrôles -->
+      <div id="host-controls" style="display:none;">
+        <hr class="divider">
+        <div class="flex-between">
+          <h3 style="margin:0;">Contrôles animateur</h3>
+          <button class="btn btn-danger btn-sm" onclick="endSession()">Clore</button>
+        </div>
+        <div id="host-reveal-summary" style="margin-top:12px;"></div>
+        <button class="btn btn-gold btn-full mt-16" id="host-go-reveal-btn" onclick="showScreen(&#39;reveal&#39;)" style="font-size:15px;padding:13px;">🔓 Révéler le vin suivant</button>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ═══════════════ RÉVÉLATION (organisateur) ═══════════════ -->
-<section class="screen" id="screen-reveal">
-  <div class="flex-between" style="margin-bottom:20px;">
-    <button class="btn btn-ghost btn-sm" onclick="showScreen('scores')">← Scores</button>
-    <h2 style="margin:0;font-size:18px;">Révélation</h2>
-    <div id="reveal-counter" class="text-muted" style="font-size:13px;"></div>
-  </div>
-
-  <!-- Phase attente -->
-  <div id="reveal-waiting">
-    <div class="card card-dark" style="text-align:center;padding:32px 20px;">
-      <div style="font-size:48px;margin-bottom:12px;">🍾</div>
-      <div id="reveal-waiting-label" style="font-family:'Playfair Display',serif;font-size:24px;color:var(--or);margin-bottom:8px;"></div>
-      <p class="text-muted" style="margin-bottom:24px;font-size:14px;">Tout le monde a saisi ses réponses ?</p>
-      <button class="btn btn-gold" style="font-size:16px;padding:14px 32px;" onclick="doReveal()">🔓 Révéler ce vin</button>
+  <!-- ═══════════════════════════════════
+       HISTORIQUE
+  ═══════════════════════════════════════ -->
+  <section class="screen" id="screen-history">
+    <div class="flex-between" style="margin-bottom:20px;">
+      <h2 style="margin:0;">Historique</h2>
+      <button class="btn btn-ghost btn-sm" onclick="renderHistory()">↻</button>
     </div>
-    <div class="card" style="margin-top:12px;">
-      <h3>Statut des réponses</h3>
-      <div id="reveal-tasters-status"></div>
+
+
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="exportData()">⬇ Exporter les données</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="document.getElementById(&#39;import-file&#39;).click()">⬆ Importer</button>
+        <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(this)">
+      </div>
+    <div id="history-global-stats" style="margin-bottom:16px;"></div>
+
+    <div id="history-list"></div>
+
+    <div id="history-session-detail" style="display:none;">
+      <button class="btn btn-ghost btn-sm" onclick="backToHistoryList()" style="margin-bottom:16px;">← Retour à la liste</button>
+      <div id="history-session-detail-content"></div>
     </div>
-  </div>
+    <div id="history-list-wrap"></div>
+  </section>
 
-  <!-- Phase résultat -->
-  <div id="reveal-result" style="display:none;">
-    <div class="card card-dark" style="text-align:center;padding:24px 20px;margin-bottom:16px;">
-      <p class="text-muted" style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;">La bonne réponse</p>
-      <div id="reveal-answer-producer" style="font-family:'Playfair Display',serif;font-size:22px;color:var(--or);margin-bottom:4px;"></div>
-      <div id="reveal-answer-appellation" style="font-size:16px;color:var(--parchemin);margin-bottom:4px;"></div>
-      <div id="reveal-answer-millesime" style="font-size:28px;font-family:'Playfair Display',serif;color:var(--or-light);"></div>
-    </div>
-    <div class="card" style="margin-bottom:16px;">
-      <h3>Points gagnés sur ce vin</h3>
-      <div id="reveal-scores-list"></div>
-    </div>
-    <div class="card card-dark" style="margin-bottom:16px;">
-      <h3>Classement général</h3>
-      <table class="score-table">
-        <thead><tr><th style="width:40px;">#</th><th>Joueur</th><th style="text-align:right;">Total</th></tr></thead>
-        <tbody id="reveal-ranking-body"></tbody>
-      </table>
-    </div>
-    <div id="reveal-next-btn" style="text-align:center;padding-bottom:16px;"></div>
-  </div>
-</section>
 
-<!-- ═══════════════ HISTORIQUE ═══════════════ -->
-<section class="screen" id="screen-history">
-  <div class="flex-between" style="margin-bottom:20px;">
-  <h2 style="margin:0;">Historique</h2>
-
-  <div style="display:flex;gap:8px;">
-    <button class="btn btn-danger btn-sm"
-            id="history-delete-btn"
-            hidden
-            onclick="deleteSelectedSessions()">
-      🗑 Supprimer
-    </button>
-
-    <button class="btn btn-ghost btn-sm"
-            onclick="renderHistory()">
-      ↻
-    </button>
-  </div>
-</div>
-  <div id="history-global-stats" style="margin-bottom:16px;"></div>
-  <div id="history-list"></div>
-  <div id="history-session-detail" style="display:none;">
-    <button class="btn btn-ghost btn-sm" onclick="backToHistoryList()" style="margin-bottom:16px;">← Liste</button>
-    <div id="history-session-detail-content"></div>
-  </div>
-</section>
-
-</main>
-
-<!-- Datalist appellations -->
 <datalist id="appellations_list">
-  <option value="Bordeaux"><option value="Médoc"><option value="Pomerol"><option value="Saint-Émilion">
-  <option value="Pauillac"><option value="Saint-Julien"><option value="Margaux"><option value="Saint-Estèphe">
-  <option value="Pessac-Léognan"><option value="Sauternes"><option value="Bourgogne">
-  <option value="Gevrey-Chambertin"><option value="Nuits-Saint-Georges"><option value="Pommard"><option value="Volnay">
-  <option value="Meursault"><option value="Puligny-Montrachet"><option value="Chassagne-Montrachet">
-  <option value="Chablis"><option value="Mâcon"><option value="Pouilly-Fuissé">
-  <option value="Côte Rôtie"><option value="Condrieu"><option value="Hermitage">
-  <option value="Crozes-Hermitage"><option value="Saint-Joseph"><option value="Châteauneuf-du-Pape">
-  <option value="Gigondas"><option value="Vacqueyras"><option value="Bandol"><option value="Cassis">
-  <option value="Alsace"><option value="Alsace Grand Cru"><option value="Gewurztraminer">
-  <option value="Muscadet"><option value="Vouvray"><option value="Chinon"><option value="Bourgueil">
-  <option value="Sancerre"><option value="Pouilly-Fumé"><option value="Champagne">
-  <option value="Crémant d'Alsace"><option value="Crémant de Bourgogne">
-  <option value="Côtes du Rhône"><option value="IGP Pays d'Oc"><option value="Languedoc">
-  <option value="Corbières"><option value="Minervois"><option value="Roussillon">
-  <option value="Barolo"><option value="Barbaresco"><option value="Chianti Classico">
-  <option value="Brunello di Montalcino"><option value="Amarone">
-  <option value="Rioja"><option value="Ribera del Duero"><option value="Priorat">
-  <option value="Champagne Blanc de Blancs"><option value="Champagne Blanc de Noirs">
-</datalist>
+  <option value="Bordeaux">
+  </option><option value="Médoc">
+  </option><option value="Pomerol">
+  </option><option value="Saint-Émilion">
+  </option><option value="Pauillac">
+  </option><option value="Saint-Julien">
+  </option><option value="Margaux">
+  </option><option value="Saint-Estèphe">
+  </option><option value="Pessac-Léognan">
+  </option><option value="Sauternes">
+  </option><option value="Bourgogne">
+  </option><option value="Gevrey-Chambertin">
+  </option><option value="Nuits-Saint-Georges">
+  </option><option value="Pommard">
+  </option><option value="Volnay">
+  </option><option value="Meursault">
+  </option><option value="Puligny-Montrachet">
+  </option><option value="Chassagne-Montrachet">
+  </option><option value="Chablis">
+  </option><option value="Mâcon">
+  </option><option value="Pouilly-Fuissé">
+  </option><option value="Côte Rôtie">
+  </option><option value="Condrieu">
+  </option><option value="Hermitage">
+  </option><option value="Crozes-Hermitage">
+  </option><option value="Saint-Joseph">
+  </option><option value="Châteauneuf-du-Pape">
+  </option><option value="Gigondas">
+  </option><option value="Vacqueyras">
+  </option><option value="Bandol">
+  </option><option value="Alsace">
+  </option><option value="Alsace Grand Cru">
+  </option><option value="Muscadet">
+  </option><option value="Vouvray">
+  </option><option value="Chinon">
+  </option><option value="Bourgueil">
+  </option><option value="Sancerre">
+  </option><option value="Pouilly-Fumé">
+  </option><option value="Champagne">
+  </option><option value="Barolo">
+  </option><option value="Barbaresco">
+  </option><option value="Chianti Classico">
+  </option><option value="Brunello di Montalcino">
+  </option><option value="Amarone">
+  </option><option value="Rioja">
+  </option><option value="Ribera del Duero">
+  </option><option value="Priorat">
+  </option><option value="Côtes du Rhône">
+  </option><option value="Corbières">
+  </option><option value="Minervois">
+  </option><option value="IGP Pays d&#39;Oc">
+  </option><option value="Languedoc">
+</option></datalist>
+
+  <!-- ═══════════════════════════════════
+       ÉCRAN RÉVÉLATION (ANIMATEUR)
+  ═══════════════════════════════════════ -->
+  <section class="screen" id="screen-reveal">
+    <div class="flex-between" style="margin-bottom:20px;">
+      <button class="btn btn-ghost btn-sm" onclick="showScreen(&#39;scores&#39;)">← Scores</button>
+      <h2 style="margin:0;font-size:18px;">Révélation</h2>
+      <div id="reveal-counter" class="text-muted" style="font-size:13px;"></div>
+    </div>
+
+    <!-- État : en attente de révélation -->
+    <div id="reveal-waiting">
+      <div class="card card-dark" style="text-align:center;padding:32px 20px;">
+        <div style="font-size:48px;margin-bottom:12px;">🍾</div>
+        <div id="reveal-waiting-label" style="font-family:&#39;Playfair Display&#39;,serif;font-size:24px;color:var(--or);margin-bottom:8px;"></div>
+        <p class="text-muted" style="margin-bottom:24px;font-size:14px;">Tout le monde a-t-il saisi ses réponses ?</p>
+        <button class="btn btn-gold" style="font-size:16px;padding:14px 32px;" onclick="doReveal()">🔓 Révéler ce vin</button>
+      </div>
+
+      <!-- Réponses saisies par chaque dégustateur (cachées) -->
+      <div class="card" style="margin-top:12px;">
+        <h3>Réponses en attente</h3>
+        <div id="reveal-tasters-status"></div>
+      </div>
+    </div>
+
+    <!-- État : révélé -->
+    <div id="reveal-result" style="display:none;">
+      <!-- La bonne réponse -->
+      <div class="card card-dark" style="text-align:center;padding:24px 20px;margin-bottom:16px;">
+        <p class="text-muted" style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">La bonne réponse</p>
+        <div id="reveal-answer-producer" style="font-family:&#39;Playfair Display&#39;,serif;font-size:22px;color:var(--or);margin-bottom:4px;"></div>
+        <div id="reveal-answer-appellation" style="font-size:16px;color:var(--parchemin);margin-bottom:4px;"></div>
+        <div id="reveal-answer-millesime" style="font-size:28px;font-family:&#39;Playfair Display&#39;,serif;color:var(--or-light);"></div>
+      </div>
+
+      <!-- Scores de chacun pour ce vin -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3>Points gagnés sur ce vin</h3>
+        <div id="reveal-scores-list"></div>
+      </div>
+
+      <!-- Classement mis à jour -->
+      <div class="card card-dark" style="margin-bottom:16px;">
+        <h3>Classement général</h3>
+        <table class="score-table" id="reveal-ranking-table">
+          <thead><tr><th style="width:40px;">#</th><th>Joueur</th><th style="text-align:right;">Total</th></tr></thead>
+          <tbody id="reveal-ranking-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Navigation -->
+      <div id="reveal-next-btn" style="text-align:center;"></div>
+    </div>
+  </section>
+
+
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,10,10,0.85);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="width:40px;height:40px;border:3px solid var(--brun-light);border-top-color:var(--or);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div id="loading-msg" style="color:var(--or);font-family:&#39;Playfair Display&#39;,serif;font-size:16px;">Chargement…</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg);}}</style>
+</main>
 
 <div class="toast" id="toast"></div>
 
-<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,10,10,.88);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
-  <div style="width:40px;height:40px;border:3px solid var(--brun-light);border-top-color:var(--or);border-radius:50%;animation:spin .8s linear infinite;"></div>
-  <div id="loading-msg" style="color:var(--or);font-family:'Playfair Display',serif;font-size:16px;"></div>
-</div>
-
-
 <script type="module">
-/* ════════════════════════════════════════
-   FIREBASE
-════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   CONFIGURATION FIREBASE
+   Remplacez les valeurs ci-dessous par celles de votre
+   projet Firebase (voir guide d'installation)
+═══════════════════════════════════════════════════════ */
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyBEb10J5vyDpm28ysYPFAGt5jyyoX66sXQ",
   authDomain:        "la-cave-a0c8f.firebaseapp.com",
@@ -436,734 +767,603 @@ const FIREBASE_CONFIG = {
   appId:             "1:976619965471:web:dabb7431e2922ab302d92a"
 };
 
+/* ═══════════════════════
+   INIT FIREBASE
+═══════════════════════ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, getDocs
+  getFirestore, doc, setDoc, getDoc, updateDoc,
+  onSnapshot, collection, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const app = initializeApp(FIREBASE_CONFIG);
-const db  = getFirestore(app);
+const firebaseApp = initializeApp(FIREBASE_CONFIG);
+const db = getFirestore(firebaseApp);
 
-/* ════════════════════════════════════════
+/* ═══════════════════════
    ÉTAT LOCAL
-════════════════════════════════════════ */
-let currentUser    = null;
-let currentSession = null;
-let currentSecrets = null;
-let unsubscribe    = null;
-let selectedHistorySessions = new Set();
+═══════════════════════ */
+let currentUser = null;   // {name, role:'host'|'taster', sessionCode}
+let currentSession = null; // snapshot local de la session active
+let unsubscribeSession = null; // listener Firestore en cours
 
-const LOCAL_KEY = 'la_cave_v3';
-const saveUser = () => localStorage.setItem(LOCAL_KEY, JSON.stringify(currentUser));
-const loadUser = () => { try { const d = localStorage.getItem(LOCAL_KEY); if (d) currentUser = JSON.parse(d); } catch(e){} };
+const LOCAL_KEY = 'la_cave_user';
 
-/* ════════════════════════════════════════
-   REFS FIRESTORE
-   /sessions/{code}             — public
-   /sessions/{code}/meta/secrets — réponses, host only
-════════════════════════════════════════ */
-const sRef = code => doc(db, 'sessions', code);
-const xRef = code => doc(db, 'sessions', code, 'meta', 'secrets');
+function saveUser() {
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(currentUser));
+}
+function loadUser() {
+  try {
+    const d = localStorage.getItem(LOCAL_KEY);
+    if (d) currentUser = JSON.parse(d);
+  } catch(e) {}
+}
 
-/* ════════════════════════════════════════
-   UTILITAIRES — UNE SEULE DÉFINITION DE norm
-════════════════════════════════════════ */
+/* ═══════════════════════
+   UTILITAIRES
+═══════════════════════ */
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length:4}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
 function norm(s) { return (s||'').trim().toLowerCase(); }
 
-function generateCode() {
-  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({length:4}, () => c[Math.floor(Math.random()*c.length)]).join('');
-}
+window.exportData = function () {
+  console.log("Export lancé");
 
-async function hashPwd(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
+  // exemple simple
+  const data = localStorage.getItem("cave");
+  const blob = new Blob([data || ""], { type: "application/json" });
 
-function showToast(msg) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "cave-export.json";
+  a.click();
+};
+
+function showToast(msg, duration=2500) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
 }
+
 function showLoading(msg='Chargement…') {
   document.getElementById('loading-overlay').style.display = 'flex';
   document.getElementById('loading-msg').textContent = msg;
 }
-function hideLoading() { document.getElementById('loading-overlay').style.display = 'none'; }
-
-/* ════════════════════════════════════════
-   FUZZY MATCHING PRODUCTEUR & APPELLATION
-
-   Algorithme :
-   1. cleanName() retire les stop words (domaine, château, cave, de, du…)
-      et les accents avant comparaison
-   2. levenshtein() calcule la distance d'édition
-   3. fuzzyMatch() valide si distance ≤ seuil (20% de la longueur, min 1, max 3)
-
-   Exemples qui matchent "Domaine de Gramenon" :
-     "Gramenon", "Grammenon", "domaines Gramenon", "domaine Gramenenon"
-════════════════════════════════════════ */
-const STOP_WORDS = new Set([
-  'domaine','domaines','chateau','chateaux','maison','cave','caves',
-  'clos','mas','abbaye','prieure','prieuré','vignoble','vignobles',
-  'propriete','propriété','estate','winery','cellars','cellar',
-  'de','du','des','le','la','les','et','of','the','di','del','&'
-]);
-
-function cleanName(s) {
-  return norm(s)
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // retire accents
-    .replace(/[^a-z0-9 ]/g, ' ')                        // retire ponctuation
-    .split(/\s+/)
-    .filter(w => w.length > 0 && !STOP_WORDS.has(w))
-    .join(' ')
-    .trim();
+function hideLoading() {
+  document.getElementById('loading-overlay').style.display = 'none';
 }
 
-function levenshtein(a, b) {
-  if (!a.length) return b.length;
-  if (!b.length) return a.length;
-  const dp = Array.from({length: a.length + 1}, (_, i) => [i]);
-  for (let j = 1; j <= b.length; j++) dp[0][j] = j;
-  for (let i = 1; i <= a.length; i++)
-    for (let j = 1; j <= b.length; j++)
-      dp[i][j] = a[i-1] === b[j-1]
-        ? dp[i-1][j-1]
-        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-  return dp[a.length][b.length];
-}
-
-function fuzzyMatch(ref, guess) {
-  if (!ref || !guess) return false;
-  const a = cleanName(ref);
-  const b = cleanName(guess);
-  if (!a || !b) return false;
-  if (a === b) return true;
-  const threshold = Math.min(3, Math.max(1, Math.floor(Math.max(a.length, b.length) * 0.2)));
-  return levenshtein(a, b) <= threshold;
-}
-
-/* ════════════════════════════════════════
-   CALCUL DES SCORES
-   — calculés par l'organisateur à la révélation
-   — écrits dans session.scores (Firestore)
-   — les dégustateurs n'ont jamais accès aux secrets
-════════════════════════════════════════ */
-function computeWineScore(secret, guess) {
-  if (!secret || !guess) return 0;
-  let pts = 0;
-  if (norm(secret.producer)    && fuzzyMatch(secret.producer,    guess.producer))    pts += 5;
-  if (norm(secret.appellation) && fuzzyMatch(secret.appellation, guess.appellation)) pts += 3;
-  if (secret.millesime && guess.millesime) {
-    const d = Math.abs(secret.millesime - parseInt(guess.millesime));
-    if (d === 0) pts += 2; else if (d === 1) pts += 1;
-  }
-  return pts;
-}
-
-function getTotalScore(session, name) {
-  if (!session.scores?.[name]) return 0;
-  return Object.values(session.scores[name]).reduce((s, p) => s + (p||0), 0);
-}
-
-/* ════════════════════════════════════════
+/* ═══════════════════════
    NAVIGATION
-════════════════════════════════════════ */
+═══════════════════════ */
 function showScreen(id) {
-  if(id==='home-join'){
-    renderAvailableSessions();
-  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-'+id)?.classList.add('active');
+  const el = document.getElementById('screen-'+id);
+  if (el) el.classList.add('active');
+
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  const map = {home:'Accueil',session:'Session',scores:'Scores',history:'Historique',reveal:'🔓 Révéler'};
-  document.querySelectorAll('.nav-tab').forEach(t => { if (t.textContent === map[id.split('-')[0]]) t.classList.add('active'); });
+  const tabMap = {home:'Accueil', session:'Session', scores:'Scores', history:'Historique', reveal:'🔓 Révéler'};
+  const rootId = id.split('-')[0];
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (t.textContent === tabMap[rootId]) t.classList.add('active');
+  });
+
+  if (id==='home-join') renderAvailableSessions();
   if (id==='session') renderSessionScreen();
-  if (id==='scores')  renderScores();
+  if (id==='scores') renderScores();
   if (id==='history') renderHistory();
-  if (id==='reveal')  renderRevealScreen();
+  if (id==='reveal') renderRevealScreen();
 }
 
-/* ════════════════════════════════════════
-   LISTENER TEMPS RÉEL
-════════════════════════════════════════ */
-function subscribeSession(code) {
-  if (unsubscribe) unsubscribe();
-  unsubscribe = onSnapshot(sRef(code), snap => {
+/* ═══════════════════════
+   FIRESTORE HELPERS
+═══════════════════════ */
+function sessionRef(code) {
+  return doc(db, 'sessions', code);
+}
+
+// Démarre l'écoute temps réel de la session active
+function subscribeToSession(code) {
+  if (unsubscribeSession) unsubscribeSession();
+  unsubscribeSession = onSnapshot(sessionRef(code), snap => {
     if (!snap.exists()) return;
     currentSession = snap.data();
-    const id = document.querySelector('.screen.active')?.id?.replace('screen-','');
-    if (id==='session') renderSessionScreen();
-    if (id==='scores')  renderScores();
-    if (id==='reveal')  renderRevealScreen();
+    // Mettre à jour l'UI selon l'écran actif
+    const active = document.querySelector('.screen.active');
+    if (!active) return;
+    const id = active.id.replace('screen-','');
+    if (id === 'session') renderSessionScreen();
+    if (id === 'scores') renderScores();
+    if (id === 'reveal') renderRevealScreen();
   });
 }
 
-
-async function renderAvailableSessions() {
-  const box = document.getElementById('available-sessions-list');
-  if (!box) return;
-  box.innerHTML = `
-    <div style="opacity:.7;font-size:14px;">
-      Chargement…
-    </div>
-  `;
-  try {
-    const snap = await getDocs(collection(db,'sessions'));
-    const sessions = [];
-    snap.forEach(docu => {
-      const s = docu.data();
-      if (s.status === 'active') {
-        sessions.push(s);
-      }
-    });
-    if (!sessions.length) {
-      box.innerHTML = `
-        <div style="opacity:.7;font-size:14px;">
-          Aucune session active
-        </div>
-      `;
-      return;
-    }
-    box.innerHTML = sessions.map(s => {
-      const players =
-        Object.keys(s.tasters || {}).length;
-      return `
-        <div class="session-tile"
-             onclick="quickJoinSession('${s.code}')"
-             style="cursor:pointer;">
-          <div>
-            <div class="session-tile-name">
-              ${s.name}
-            </div>
-            <div class="session-tile-meta">
-              ${players} joueur(s)
-              ·
-              ${s.wines.length} vins
-            </div>
-          </div>
-          <span class="pill pill-ok">
-            Rejoindre
-          </span>
-        </div>
-      `;
-    }).join('');
-  } catch(e) {
-    console.error(e);
-    box.innerHTML = `
-      <div style="color:#ff8080;font-size:14px;">
-        Erreur chargement sessions
-      </div>
-    `;
-  }
-}
-
-async function quickJoinSession(code) {
-  const name =
-    document.getElementById('join-name')
-      ?.value
-      ?.trim();
-  const password =
-    document.getElementById('join-password')
-      ?.value || '';
-  if (!name) {
-    showToast('Entrez votre prénom');
-    return;
-  }
-  showLoading('Connexion…');
-  try {
-    const snap = await getDoc(sRef(code));
-    if (!snap.exists()) {
-      hideLoading();
-      showToast('Session introuvable');
-      return;
-    }
-    const session = snap.data();
-    let role = 'taster';
-    // Vérification organisateur
-    if (password) {
-      try {
-        const secretSnap =
-          await getDoc(xRef(code));
-        if (secretSnap.exists()) {
-          const sec = secretSnap.data();
-          if (sec.hostPassword === password) {
-            role = 'host';
-          }
-        }
-      } catch(e) {
-        console.error(e);
-      }
-    }
-    currentUser = {
-      name,
-      role,
-      sessionCode: code
-    };
-    currentSession = session;
-    hideLoading();
-    openSession(code);
-  } catch(e) {
-    hideLoading();
-    console.error(e);
-    showToast('Erreur connexion');
-  }
-}
-/* ════════════════════════════════════════
+/* ═══════════════════════
    CRÉER SESSION
-════════════════════════════════════════ */
+═══════════════════════ */
 let wineRowCount = 0;
 
 function addWineRow() {
   wineRowCount++;
-  const wid = 'wine_'+wineRowCount;
+  const id = 'wine_'+wineRowCount;
+  const list = document.getElementById('wine-rows-list');
   const div = document.createElement('div');
   div.className = 'card card-dark';
-  div.id = 'row_'+wid;
+  div.id = 'row_'+id;
   div.style.cssText = 'padding:14px;margin-bottom:10px;';
   div.innerHTML = `
     <div class="flex-between" style="margin-bottom:10px;">
-      <span style="font-family:'Playfair Display',serif;color:var(--or);">Vin ${wineRowCount}</span>
-      <button class="btn btn-danger btn-sm" onclick="addWineRowRemove('row_${wid}')">✕</button>
+      <span class="text-or" style="font-family:'Playfair Display',serif;font-size:15px;">Vin ${wineRowCount}</span>
+      <button class="btn btn-danger btn-sm" onclick="document.getElementById('row_${id}').remove()">✕</button>
     </div>
     <div class="grid-2">
       <div class="form-group" style="margin-bottom:8px;">
-        <label style="font-size:10px;">Producteur</label>
-        <input type="text" id="${wid}_producer" placeholder="ex : Romanée-Conti">
+        <label style="font-size:11px;">Producteur</label>
+        <input type="text" id="${id}_producer" placeholder="ex: Romanée-Conti">
       </div>
       <div class="form-group" style="margin-bottom:8px;">
-        <label style="font-size:10px;">Appellation</label>
-        <input type="text" id="${wid}_appellation" placeholder="ex : Gevrey-Chambertin" list="appellations_list">
+        <label style="font-size:11px;">Appellation</label>
+        <input type="text" id="${id}_appellation" placeholder="ex: Gevrey-Chambertin" list="appellations_list">
       </div>
     </div>
     <div class="form-group" style="margin-bottom:0;">
-      <label style="font-size:10px;">Millésime</label>
-      <input type="number" id="${wid}_millesime" placeholder="ex : 2019" min="1900" max="2099">
-    </div>`;
-  document.getElementById('wine-rows-list').appendChild(div);
+      <label style="font-size:11px;">Millésime</label>
+      <input type="number" id="${id}_millesime" placeholder="ex: 2019" min="1900" max="2099">
+    </div>
+  `;
+  list.appendChild(div);
 }
-function addWineRowRemove(id) { document.getElementById(id)?.remove(); }
 
 async function createSession() {
-  const sessionName = document.getElementById('create-session-name').value.trim();
-  const hostName    = document.getElementById('create-host-name').value.trim();
-  const password    = document.getElementById('create-host-password').value.trim();
-  if (!sessionName || !hostName) { showToast('Remplissez le nom de session et votre prénom'); return; }
-  if (!password)                  { showToast('Choisissez un mot de passe organisateur'); return; }
+  const name = document.getElementById('create-session-name').value.trim();
+  const host = document.getElementById('create-host-name').value.trim();
+  if (!name || !host) { showToast('Veuillez remplir tous les champs'); return; }
 
-  const winesPublic  = [];
-  const winesSecrets = {};
+  const wines = [];
   let idx = 1;
   document.querySelectorAll('[id^="row_wine_"]').forEach(row => {
     const wid = row.id.replace('row_','');
-    const p = document.getElementById(wid+'_producer')?.value.trim() || '';
-    const a = document.getElementById(wid+'_appellation')?.value.trim() || '';
-    const m = parseInt(document.getElementById(wid+'_millesime')?.value) || 0;
-    if (p||a||m) {
-      const label = 'Vin '+(idx++);
-      winesPublic.push({ id:wid, label, revealed:false });
-      winesSecrets[wid] = { producer:p, appellation:a, millesime:m, label };
+    const p = document.getElementById(wid+'_producer').value.trim();
+    const a = document.getElementById(wid+'_appellation').value.trim();
+    const m = parseInt(document.getElementById(wid+'_millesime').value) || 0;
+    if (p || a || m) {
+      wines.push({ id: wid, label: 'Vin '+idx++, answer: {producer:p, appellation:a, millesime:m}, revealed: false });
     }
   });
-  if (!winesPublic.length) { showToast('Ajoutez au moins un vin'); return; }
 
-  showLoading('Création…');
+  if (wines.length === 0) { showToast('Ajoutez au moins un vin'); return; }
+
+  showLoading('Création de la session…');
   try {
-    const code   = generateCode();
-    const pwHash = await hashPwd(password);
-    const pub = {
-      code, name:sessionName, host:hostName, hostHash:pwHash,
-      createdAt:Date.now(), status:'active',
-      wines:winesPublic, tasters:{}, scores:{}
+    const code = generateCode();
+    const sessionData = {
+      code, name, host,
+      createdAt: Date.now(),
+      status: 'active',
+      wines,
+      tasters: {
+        [host]: { answers: {}, submitted: false }
+      }
     };
-    await setDoc(sRef(code), pub);
-    await setDoc(xRef(code), { wines:winesSecrets });
+    await setDoc(sessionRef(code), sessionData);
 
-    currentUser    = { name:hostName, role:'host', sessionCode:code, pwHash };
-    currentSession = pub;
-    currentSecrets = winesSecrets;
+    currentUser = { name: host, role: 'host', sessionCode: code };
     saveUser();
-    subscribeSession(code);
+    currentSession = sessionData;
+    subscribeToSession(code);
 
     wineRowCount = 0;
     document.getElementById('wine-rows-list').innerHTML = '';
     hideLoading();
-    showToast('Session créée ! Code : '+code);
+    showToast(`Session créée ! Code : ${code}`);
     showScreen('session');
-  } catch(e) { hideLoading(); showToast('Erreur : '+e.message); console.error(e); }
+  } catch(e) {
+    hideLoading();
+    showToast('Erreur : ' + e.message);
+  }
 }
 
-/* ════════════════════════════════════════
+/* ═══════════════════════
    REJOINDRE SESSION
-════════════════════════════════════════ */
+═══════════════════════ */
+async function renderAvailableSessions() {
+  const list = document.getElementById('available-sessions-list');
+  list.innerHTML = '<p class="text-muted" style="font-size:13px;">Recherche en cours…</p>';
+  // On ne peut pas lister toutes les sessions sans index — on affiche juste l'aide
+  list.innerHTML = '<p class="text-muted" style="font-size:13px;">Saisissez le code que l\'animateur vous a communiqué.</p>';
+}
+
+function quickJoin(code) {
+  document.getElementById('join-code').value = code;
+}
+
 async function joinSession() {
-  const code     = document.getElementById('join-code').value.trim().toUpperCase();
-  const name     = document.getElementById('join-name').value.trim();
-  const password = document.getElementById('join-password').value.trim();
-  if (!code||!name) { showToast('Saisissez le code et votre prénom'); return; }
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  const name = document.getElementById('join-name').value.trim();
+  if (!code || !name) { showToast('Remplissez tous les champs'); return; }
 
-  showLoading('Connexion…');
+  showLoading('Connexion à la session…');
   try {
-    const snap = await getDoc(sRef(code));
-    if (!snap.exists())            { hideLoading(); showToast('Session introuvable'); return; }
+    const snap = await getDoc(sessionRef(code));
+    if (!snap.exists()) { hideLoading(); showToast('Session introuvable'); return; }
     const session = snap.data();
-    if (session.status==='closed') { hideLoading(); showToast('Session clôturée'); return; }
+    if (session.status === 'closed') { hideLoading(); showToast('Cette session est clôturée'); return; }
 
-    let role='taster', pwHash=null;
-    if (password) {
-      pwHash = await hashPwd(password);
-      if (pwHash !== session.hostHash) { hideLoading(); showToast('Mot de passe incorrect'); return; }
-      role = 'host';
-    }
-
+    // Ajouter le dégustateur si nouveau
     if (!session.tasters[name]) {
-      await updateDoc(sRef(code), { [`tasters.${name}`]: { answers:{} } });
+      await updateDoc(sessionRef(code), {
+        [`tasters.${name}`]: { answers: {}, submitted: false }
+      });
     }
 
-    currentUser    = { name, role, sessionCode:code, pwHash };
-    currentSession = session;
-    currentSecrets = null;
+    currentUser = { name, role: session.host === name ? 'host' : 'taster', sessionCode: code };
     saveUser();
+    currentSession = session;
+    subscribeToSession(code);
 
-    if (role==='host') {
-      const sec = await getDoc(xRef(code));
-      currentSecrets = sec.exists() ? sec.data().wines : {};
-    }
-
-    subscribeSession(code);
     hideLoading();
     showScreen('session');
-  } catch(e) { hideLoading(); showToast('Erreur : '+e.message); console.error(e); }
+  } catch(e) {
+    hideLoading();
+    showToast('Erreur : ' + e.message);
+  }
 }
 
-/* ════════════════════════════════════════
-   ÉCRAN SESSION
-════════════════════════════════════════ */
+/* ═══════════════════════
+   SESSION — SAISIE
+═══════════════════════ */
 function renderSessionScreen() {
-  if (!currentUser||!currentSession) { showScreen('home'); return; }
-  const { name, role } = currentUser;
+  if (!currentUser || !currentSession) { showScreen('home'); return; }
+  const { name } = currentUser;
   const session = currentSession;
-  const taster  = session.tasters[name] || { answers:{} };
+  const taster = session.tasters[name];
+  if (!taster) return;
 
-  document.getElementById('session-title').textContent        = session.name;
-  document.getElementById('session-player-name').textContent  = name + (role==='host' ? ' · organisateur' : '');
-  document.getElementById('session-my-score').textContent     = getTotalScore(session, name) + ' pts';
-  document.getElementById('session-code-display').textContent = session.code;
+  const myScore = computeScore(session, name);
+  document.getElementById('session-title').textContent = session.name;
+  document.getElementById('session-player-name').textContent = name + (session.host === name ? ' · animateur' : '');
+  document.getElementById('session-my-score').textContent = myScore + ' pts';
+  const codeEl = document.getElementById('session-code-display');
+  if (codeEl) codeEl.textContent = session.code;
 
   const answered = session.wines.filter(w => {
-    const a = (taster.answers||{})[w.id]; return a && (a.producer||a.appellation||a.millesime);
+    const a = taster.answers[w.id];
+    return a && (a.producer || a.appellation || a.millesime);
   }).length;
   document.getElementById('session-progress').style.width = (answered/session.wines.length*100)+'%';
 
   const list = document.getElementById('session-wines-list');
-  const openIds = new Set([...list.querySelectorAll('.wine-item-body.open')].map(b=>b.id.replace('body_','')));
+  // Conserver les éléments ouverts
+  const openIds = new Set();
+  list.querySelectorAll('.wine-item-body.open').forEach(b => openIds.add(b.id.replace('body_','')));
   list.innerHTML = '';
 
   session.wines.forEach((wine, idx) => {
-    const ans     = (taster.answers||{})[wine.id] || {};
-    const hasSome = ans.producer||ans.appellation||ans.millesime;
-    const status  = wine.revealed ? '🔓 Révélé' : (hasSome ? '✓ Saisi' : '…');
-    const isOpen  = openIds.has(wine.id);
+    const ans = taster.answers[wine.id] || {};
+    const isRevealed = wine.revealed;
+    const div = document.createElement('div');
+    div.className = 'wine-item';
 
-    let body = '';
-    if (wine.revealed) {
-      const pts    = session.scores?.[name]?.[wine.id] ?? '—';
-      const secret = currentSecrets?.[wine.id];
-      body = secret ? bodyHost(secret, ans, pts) : bodyTaster(ans, pts);
+    const hasSomething = ans.producer || ans.appellation || ans.millesime;
+    const statusText = isRevealed ? '🔓 Révélé' : (hasSomething ? '✓ Saisi' : '...');
+
+    let bodyContent = '';
+    if (isRevealed) {
+      const pts = computeWineScore(wine.answer, ans);
+      bodyContent = `
+        <div style="margin-bottom:12px;">
+          <p class="text-muted" style="font-size:12px;margin-bottom:8px;">Vos réponses</p>
+          <div class="reveal-row"><span class="field-label">Producteur</span><span class="field-val">${ans.producer||'—'}</span></div>
+          <div class="reveal-row"><span class="field-label">Appellation</span><span class="field-val">${ans.appellation||'—'}</span></div>
+          <div class="reveal-row"><span class="field-label">Millésime</span><span class="field-val">${ans.millesime||'—'}</span></div>
+        </div>
+        <div>
+          <p class="text-muted" style="font-size:12px;margin-bottom:8px;">Réponses correctes</p>
+          ${renderRevealDetail(wine.answer, ans)}
+        </div>
+        <div style="text-align:right;margin-top:10px;"><span class="pts-badge">+${pts} pts</span></div>`;
     } else {
-      body = `
+      bodyContent = `
         <div class="form-group">
           <label>Producteur</label>
-          <input type="text" id="inp_${wine.id}_producer" value="${ans.producer||''}"
-            placeholder="Votre réponse…" oninput="saveAnswer('${wine.id}','producer',this.value)">
+          <input type="text" id="inp_${wine.id}_producer" value="${ans.producer||''}" placeholder="Votre réponse…"
+            oninput="saveAnswer('${wine.id}','producer',this.value)">
         </div>
         <div class="form-group">
           <label>Appellation</label>
-          <input type="text" id="inp_${wine.id}_appellation" value="${ans.appellation||''}"
-            placeholder="Votre réponse…" list="appellations_list"
-            oninput="saveAnswer('${wine.id}','appellation',this.value)">
+          <input type="text" id="inp_${wine.id}_appellation" value="${ans.appellation||''}" placeholder="Votre réponse…"
+            list="appellations_list" oninput="saveAnswer('${wine.id}','appellation',this.value)">
         </div>
         <div class="form-group" style="margin-bottom:0;">
           <label>Millésime</label>
-          <input type="number" id="inp_${wine.id}_millesime" value="${ans.millesime||''}"
-            placeholder="ex : 2018" min="1900" max="2099"
-            oninput="saveAnswer('${wine.id}','millesime',this.value)">
+          <input type="number" id="inp_${wine.id}_millesime" value="${ans.millesime||''}" placeholder="ex: 2018"
+            min="1900" max="2099" oninput="saveAnswer('${wine.id}','millesime',this.value)">
         </div>`;
     }
 
-    const div = document.createElement('div');
-    div.className = 'wine-item';
+    const isOpen = openIds.has(wine.id);
     div.innerHTML = `
-      <div class="wine-item-header" onclick="toggleWine('${wine.id}')">
+      <div class="wine-item-header" onclick="toggleWineEntry('${wine.id}')">
         <span class="wine-num">${idx+1}</span>
         <span class="wine-item-title">${wine.label}</span>
-        <span class="wine-item-status">${status}</span>
+        <span class="wine-item-status">${statusText}</span>
       </div>
-      <div class="wine-item-body${isOpen?' open':''}" id="body_${wine.id}">${body}</div>`;
+      <div class="wine-item-body ${isOpen?'open':''}" id="body_${wine.id}">${bodyContent}</div>`;
     list.appendChild(div);
   });
 
-  if (!openIds.size) {
+  // Ouvrir le 1er non-répondu si rien n'était ouvert
+  if (openIds.size === 0) {
     const first = session.wines.find(w => {
-      const a=(taster.answers||{})[w.id];
-      return !w.revealed && (!a||(!a.producer&&!a.appellation&&!a.millesime));
+      const a = taster.answers[w.id];
+      return !w.revealed && (!a || (!a.producer && !a.appellation && !a.millesime));
     });
     if (first) document.getElementById('body_'+first.id)?.classList.add('open');
   }
 }
 
-/* Vue organisateur après révélation : montre la vraie réponse + comparaison */
-function bodyHost(secret, ans, pts) {
-  const pOk = norm(secret.producer)    && fuzzyMatch(secret.producer,    ans.producer);
-  const aOk = norm(secret.appellation) && fuzzyMatch(secret.appellation, ans.appellation);
-  let mPts=0, mCls='';
-  if (secret.millesime&&ans.millesime) {
-    const d=Math.abs(secret.millesime-parseInt(ans.millesime));
-    if(d===0){mPts=2;mCls='correct';}else if(d===1){mPts=1;mCls='partial';}
-  }
-  return `
-    <p class="text-muted" style="font-size:11px;margin-bottom:8px;">Votre réponse → bonne réponse</p>
-    <div class="reveal-row ${pOk?'correct':''}">
-      <div><span class="field-label">Producteur</span><br>
-        <span>${ans.producer||'—'} → <strong style="color:var(--or-light);">${secret.producer||'—'}</strong></span></div>
-      <span class="pts-got">${pOk?'+5 pts':'0'}</span>
-    </div>
-    <div class="reveal-row ${aOk?'correct':''}">
-      <div><span class="field-label">Appellation</span><br>
-        <span>${ans.appellation||'—'} → <strong style="color:var(--or-light);">${secret.appellation||'—'}</strong></span></div>
-      <span class="pts-got">${aOk?'+3 pts':'0'}</span>
-    </div>
-    <div class="reveal-row ${mCls}">
-      <div><span class="field-label">Millésime</span><br>
-        <span>${ans.millesime||'—'} → <strong style="color:var(--or-light);">${secret.millesime||'—'}</strong></span></div>
-      <span class="pts-got">${mPts>0?'+'+mPts+' pt'+(mPts>1?'s':''):'0'}</span>
-    </div>
-    <div style="text-align:right;margin-top:8px;"><span class="pts-badge">+${pts} pts</span></div>`;
+function toggleWineEntry(id) {
+  document.getElementById('body_'+id)?.classList.toggle('open');
 }
 
-/* Vue dégustateur après révélation : ses réponses + points seulement */
-function bodyTaster(ans, pts) {
-  return `
-    <p class="text-muted" style="font-size:11px;margin-bottom:8px;">Vos réponses</p>
-    <div class="reveal-row"><span class="field-label">Producteur</span><span>${ans.producer||'—'}</span></div>
-    <div class="reveal-row"><span class="field-label">Appellation</span><span>${ans.appellation||'—'}</span></div>
-    <div class="reveal-row"><span class="field-label">Millésime</span><span>${ans.millesime||'—'}</span></div>
-    <div style="text-align:right;margin-top:8px;">
-      <span class="pts-badge">${pts!=='—'?'+'+pts+' pts':'En attente de révélation'}</span>
-    </div>`;
-}
-
-function toggleWine(id) { document.getElementById('body_'+id)?.classList.toggle('open'); }
-
-/* ════════════════════════════════════════
-   SAUVEGARDER RÉPONSE
-   Fix #5 : updateDoc avec l'objet complet pour éviter
-   les champs manquants sur les paths imbriqués
-════════════════════════════════════════ */
+// Debounce pour éviter trop d'écritures Firestore
 const saveTimers = {};
 function saveAnswer(wineId, field, value) {
-  if (!currentUser||!currentSession) return;
+  if (!currentUser) return;
   const { name, sessionCode } = currentUser;
-  if (!currentSession.tasters[name])              currentSession.tasters[name] = { answers:{} };
-  if (!currentSession.tasters[name].answers[wineId]) currentSession.tasters[name].answers[wineId] = {};
 
-  const v = field==='millesime' ? (parseInt(value)||null) : value;
-  currentSession.tasters[name].answers[wineId][field] = v;
+  // Mise à jour locale immédiate
+  if (!currentSession.tasters[name].answers[wineId]) {
+    currentSession.tasters[name].answers[wineId] = {};
+  }
+  const parsed = field === 'millesime' ? (parseInt(value)||null) : value;
+  currentSession.tasters[name].answers[wineId][field] = parsed;
 
-  // Barre de progression locale
-  const a = currentSession.tasters[name].answers;
-  const answered = currentSession.wines.filter(w => { const x=a[w.id]; return x&&(x.producer||x.appellation||x.millesime); }).length;
+  // Mise à jour score/progress locale
+  const myScore = computeScore(currentSession, name);
+  document.getElementById('session-my-score').textContent = myScore + ' pts';
+  const taster = currentSession.tasters[name];
+  const answered = currentSession.wines.filter(w => {
+    const a = taster.answers[w.id]; return a && (a.producer || a.appellation || a.millesime);
+  }).length;
   document.getElementById('session-progress').style.width = (answered/currentSession.wines.length*100)+'%';
 
-  // Debounce + écriture objet complet (fix path imbriqué)
+  // Debounce l'écriture Firestore (500ms)
   clearTimeout(saveTimers[wineId+field]);
   saveTimers[wineId+field] = setTimeout(async () => {
     try {
-      await updateDoc(sRef(sessionCode), {
-        [`tasters.${name}.answers.${wineId}`]: {
-          ...currentSession.tasters[name].answers[wineId],
-          [field]: v
-        }
+      await updateDoc(sessionRef(sessionCode), {
+        [`tasters.${name}.answers.${wineId}.${field}`]: parsed
       });
-    } catch(e) { console.warn('saveAnswer error', e); }
-  }, 600);
+    } catch(e) { console.warn('Save error', e); }
+  }, 500);
 }
 
-/* ════════════════════════════════════════
-   ÉCRAN SCORES
-════════════════════════════════════════ */
-function renderScores() {
-  const noSess  = document.getElementById('scores-no-session');
-  const content = document.getElementById('scores-content');
-  if (!currentUser||!currentSession) { noSess.style.display='block'; content.style.display='none'; return; }
-  noSess.style.display='none'; content.style.display='block';
+/* ═══════════════════════
+   CALCUL DES SCORES
+═══════════════════════ */
+function computeWineScore(answer, guess) {
+  if (!guess || !answer) return 0;
+  let pts = 0;
+  if (norm(answer.producer) && norm(answer.producer) === norm(guess.producer)) pts += 5;
+  if (norm(answer.appellation) && norm(answer.appellation) === norm(guess.appellation)) pts += 3;
+  if (answer.millesime && guess.millesime) {
+    const diff = Math.abs(answer.millesime - parseInt(guess.millesime));
+    if (diff === 0) pts += 2; else if (diff === 1) pts += 1;
+  }
+  return pts;
+}
 
+function computeScore(session, tasterName) {
+  const taster = session.tasters[tasterName];
+  if (!taster) return 0;
+  return session.wines.filter(w => w.revealed)
+    .reduce((sum, w) => sum + computeWineScore(w.answer, (taster.answers||{})[w.id]), 0);
+}
+
+/* ═══════════════════════
+   REVEAL DETAIL (inline)
+═══════════════════════ */
+function renderRevealDetail(answer, guess) {
+  const pOk = norm(answer.producer) && norm(answer.producer) === norm(guess?.producer);
+  const aOk = norm(answer.appellation) && norm(answer.appellation) === norm(guess?.appellation);
+  let mPts = 0, mClass = '';
+  if (answer.millesime && guess?.millesime) {
+    const diff = Math.abs(answer.millesime - parseInt(guess.millesime));
+    if (diff === 0) { mPts = 2; mClass = 'correct'; } else if (diff === 1) { mPts = 1; mClass = 'partial'; }
+  }
+  return `
+    <div class="reveal-row ${pOk?'correct':''}">
+      <div><span class="field-label">Producteur</span><br><span class="field-val">${answer.producer||'—'}</span></div>
+      <span class="pts-got">${pOk?'+5 pts':'0'}</span>
+    </div>
+    <div class="reveal-row ${aOk?'correct':''}">
+      <div><span class="field-label">Appellation</span><br><span class="field-val">${answer.appellation||'—'}</span></div>
+      <span class="pts-got">${aOk?'+3 pts':'0'}</span>
+    </div>
+    <div class="reveal-row ${mClass}">
+      <div><span class="field-label">Millésime</span><br><span class="field-val">${answer.millesime||'—'}</span></div>
+      <span class="pts-got">${mPts>0?'+'+mPts+' pt'+(mPts>1?'s':''):'0'}</span>
+    </div>`;
+}
+
+/* ═══════════════════════
+   ÉCRAN SCORES
+═══════════════════════ */
+function refreshScores() { renderScores(); showToast('Actualisé'); }
+
+function renderScores() {
+  if (!currentUser || !currentSession) {
+    document.getElementById('scores-no-session').style.display = 'block';
+    document.getElementById('scores-content').style.display = 'none';
+    return;
+  }
   const { name, role } = currentUser;
   const session = currentSession;
-  document.getElementById('scores-session-name').textContent = session.name;
-  document.getElementById('scores-code').textContent         = 'Code : '+session.code;
-  const rev = session.wines.filter(w=>w.revealed).length;
-  document.getElementById('scores-revealed-info').textContent= `${rev} / ${session.wines.length} vins révélés`;
 
-  const tasters = Object.keys(session.tasters);
-  const ranked  = tasters.map(n=>({name:n, score:getTotalScore(session,n)})).sort((a,b)=>b.score-a.score);
-  document.getElementById('scores-ranking-body').innerHTML = ranked.map((t,i)=>`
-    <tr style="${t.name===name?'background:rgba(107,26,42,.3);':''}">
-      <td><span class="rank rank-${i+1}">${['🥇','🥈','🥉'][i]||i+1}</span></td>
+  document.getElementById('scores-no-session').style.display = 'none';
+  document.getElementById('scores-content').style.display = 'block';
+  document.getElementById('scores-session-name').textContent = session.name;
+  document.getElementById('scores-code').textContent = 'Code : '+session.code;
+  const revealed = session.wines.filter(w => w.revealed).length;
+  document.getElementById('scores-revealed-info').textContent = `${revealed} / ${session.wines.length} vins révélés`;
+
+  // Classement
+  const tasterNames = Object.keys(session.tasters);
+  const ranked = tasterNames.map(n => ({ name:n, score:computeScore(session,n) })).sort((a,b)=>b.score-a.score);
+  document.getElementById('scores-ranking-body').innerHTML = ranked.map((t,i) => `
+    <tr style="${t.name===name?'background:rgba(107,26,42,0.3);':''}">
+      <td><span class="rank rank-${i+1}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span></td>
       <td style="font-weight:${t.name===name?600:400};">${t.name}${t.name===name?' (moi)':''}</td>
       <td style="text-align:right;"><span class="pts-badge">${t.score} pts</span></td>
     </tr>`).join('');
 
-  const revWines = session.wines.filter(w=>w.revealed);
-  const det = document.getElementById('scores-wines-detail');
-  if (!revWines.length) {
-    det.innerHTML = '<p class="text-muted" style="font-size:13px;margin-bottom:16px;">Aucun vin révélé pour l\'instant.</p>';
+  // Détail vins révélés
+  const detailSection = document.getElementById('scores-wines-detail');
+  const revealedWines = session.wines.filter(w => w.revealed);
+  if (revealedWines.length === 0) {
+    detailSection.innerHTML = '<p class="text-muted" style="font-size:13px;">Aucun vin révélé pour l\'instant.</p>';
   } else {
-    det.innerHTML = revWines.map(w => {
-      const secret  = currentSecrets?.[w.id];
-      const ansLine = secret
-        ? `<div class="text-muted" style="font-size:12px;margin-bottom:10px;">${secret.producer||'?'} · ${secret.appellation||'?'} · ${secret.millesime||'?'}</div>`
-        : `<div class="text-muted" style="font-size:12px;margin-bottom:10px;font-style:italic;">Réponse visible uniquement pour l'organisateur</div>`;
-      const rows = tasters.map(n => {
-        const a=(session.tasters[n].answers||{})[w.id]||{};
-        const p=session.scores?.[n]?.[w.id]??0;
-        return `<tr>
-          <td style="font-size:13px;font-weight:${n===name?600:400};">${n}</td>
-          <td style="font-size:12px;">${a.producer||'—'}</td>
-          <td style="font-size:12px;">${a.appellation||'—'}</td>
-          <td style="font-size:12px;">${a.millesime||'—'}</td>
-          <td style="text-align:right;"><span class="pts-badge">${p}</span></td>
-        </tr>`;
-      }).join('');
-      return `<div class="card card-dark" style="margin-bottom:12px;">
+    detailSection.innerHTML = revealedWines.map(w => `
+      <div class="card card-dark" style="margin-bottom:12px;">
         <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--or);margin-bottom:4px;">${w.label}</div>
-        ${ansLine}
+        <div class="text-muted" style="font-size:12px;margin-bottom:12px;">${w.answer.producer||'?'} · ${w.answer.appellation||'?'} · ${w.answer.millesime||'?'}</div>
         <div style="overflow-x:auto;">
-          <table class="score-table" style="min-width:300px;">
-            <thead><tr><th>Joueur</th><th>Producteur</th><th>Appellation</th><th>Millésime</th><th style="text-align:right;">Pts</th></tr></thead>
-            <tbody>${rows}</tbody>
+          <table class="score-table" style="min-width:320px;">
+            <thead><tr><th>Dégustateur</th><th>Producteur</th><th>Appellation</th><th>Millésime</th><th style="text-align:right;">Pts</th></tr></thead>
+            <tbody>${tasterNames.map(n => {
+              const ans = (session.tasters[n].answers||{})[w.id]||{};
+              return `<tr>
+                <td style="font-size:13px;font-weight:${n===name?600:400};">${n}</td>
+                <td style="font-size:12px;">${ans.producer||'—'}</td>
+                <td style="font-size:12px;">${ans.appellation||'—'}</td>
+                <td style="font-size:12px;">${ans.millesime||'—'}</td>
+                <td style="text-align:right;"><span class="pts-badge">${computeWineScore(w.answer,ans)}</span></td>
+              </tr>`;
+            }).join('')}</tbody>
           </table>
         </div>
-      </div>`;
-    }).join('');
+      </div>`).join('');
   }
 
-  const isHost = role==='host';
-  document.getElementById('host-controls').style.display  = isHost ? 'block' : 'none';
-  document.getElementById('nav-reveal').style.display     = isHost ? 'inline-block' : 'none';
+  // Contrôles animateur
+  const isHost = (role === 'host' || session.host === name);
+  const hostControls = document.getElementById('host-controls');
+  const navReveal = document.getElementById('nav-reveal');
   if (isHost) {
-    const unrevealed = session.wines.filter(w=>!w.revealed);
-    const goBtn  = document.getElementById('host-go-reveal-btn');
-    const sumDiv = document.getElementById('host-reveal-summary');
-    if (!unrevealed.length) {
-      goBtn.style.display='none';
-      sumDiv.innerHTML='<p class="text-muted" style="font-size:13px;">✓ Tous les vins ont été révélés.</p>';
+    hostControls.style.display = 'block';
+    if (navReveal) navReveal.style.display = 'inline-block';
+    const unrevealedWines = session.wines.filter(w => !w.revealed);
+    const goBtn = document.getElementById('host-go-reveal-btn');
+    const summary = document.getElementById('host-reveal-summary');
+    if (unrevealedWines.length === 0) {
+      if (goBtn) goBtn.style.display = 'none';
+      if (summary) summary.innerHTML = '<p class="text-muted" style="font-size:13px;">✓ Tous les vins ont été révélés.</p>';
     } else {
-      goBtn.style.display='block';
-      sumDiv.innerHTML=`<div style="font-size:13px;color:var(--gris);">${rev} / ${session.wines.length} révélés · Prochain : <span style="color:var(--or);">${unrevealed[0].label}</span></div>`;
+      if (goBtn) goBtn.style.display = 'block';
+      const next = unrevealedWines[0];
+      if (summary) summary.innerHTML = `<div style="font-size:13px;color:var(--gris);">${session.wines.length - unrevealedWines.length} / ${session.wines.length} révélés · Prochain : <span style="color:var(--or);">${next.label}</span></div>`;
     }
+  } else {
+    hostControls.style.display = 'none';
   }
 }
 
-/* ════════════════════════════════════════
-   ÉCRAN RÉVÉLATION — organisateur uniquement
-════════════════════════════════════════ */
-let revealIdx = null;
+/* ═══════════════════════
+   ÉCRAN RÉVÉLATION
+═══════════════════════ */
+let revealCurrentWineIdx = null;
 
 function renderRevealScreen() {
-  if (!currentUser||!currentSession||currentUser.role!=='host') { showScreen('scores'); return; }
-  const session    = currentSession;
-  const unrevealed = session.wines.filter(w=>!w.revealed);
+  if (!currentUser || !currentSession) { showScreen('scores'); return; }
+  const session = currentSession;
+  const unrevealedWines = session.wines.filter(w => !w.revealed);
 
-  if (!unrevealed.length) {
-    const last = session.wines.filter(w=>w.revealed).slice(-1)[0];
+  if (unrevealedWines.length === 0) {
+    // Tout révélé → afficher le dernier résultat
+    const last = session.wines.filter(w => w.revealed).slice(-1)[0];
     if (last) {
-      document.getElementById('reveal-waiting').style.display='none';
-      document.getElementById('reveal-result').style.display='block';
-      renderRevealResult(session, last.id);
+      document.getElementById('reveal-waiting').style.display = 'none';
+      document.getElementById('reveal-result').style.display = 'block';
+      renderRevealResult(session, last);
     }
     return;
   }
 
-  const wine = unrevealed[0];
-  revealIdx  = session.wines.indexOf(wine);
-  document.getElementById('reveal-counter').textContent       = `${session.wines.length-unrevealed.length+1} / ${session.wines.length}`;
+  const wine = unrevealedWines[0];
+  revealCurrentWineIdx = session.wines.indexOf(wine);
+  const total = session.wines.length;
+  const revealedCount = total - unrevealedWines.length;
+
+  document.getElementById('reveal-counter').textContent = `${revealedCount + 1} / ${total}`;
   document.getElementById('reveal-waiting-label').textContent = wine.label;
 
-  document.getElementById('reveal-tasters-status').innerHTML = Object.keys(session.tasters).map(n => {
-    const a=(session.tasters[n].answers||{})[wine.id]||{};
-    const has=a.producer||a.appellation||a.millesime;
-    return `<div class="flex-between" style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+  const tasterNames = Object.keys(session.tasters);
+  document.getElementById('reveal-tasters-status').innerHTML = tasterNames.map(n => {
+    const ans = (session.tasters[n].answers||{})[wine.id] || {};
+    const has = ans.producer || ans.appellation || ans.millesime;
+    return `<div class="flex-between" style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
       <span style="font-size:14px;">${n}</span>
       <span class="pill ${has?'pill-ok':'pill-warn'}">${has?'✓ Saisi':'⏳ En attente'}</span>
     </div>`;
   }).join('');
 
-  document.getElementById('reveal-waiting').style.display='block';
-  document.getElementById('reveal-result').style.display='none';
+  document.getElementById('reveal-waiting').style.display = 'block';
+  document.getElementById('reveal-result').style.display = 'none';
 }
 
 async function doReveal() {
-  if (!currentUser||revealIdx===null||!currentSecrets) return;
+  if (!currentUser || revealCurrentWineIdx === null) return;
+  const { sessionCode } = currentUser;
   const session = currentSession;
-  const wine    = session.wines[revealIdx];
+  const wine = session.wines[revealCurrentWineIdx];
   if (!wine) return;
 
-  showLoading('Calcul des points…');
+  showLoading('Révélation…');
   try {
-    const secret  = currentSecrets[wine.id];
-    const tasters = Object.keys(session.tasters);
-
-    const updates = {};
-    tasters.forEach(n => {
-      const guess = (session.tasters[n].answers||{})[wine.id]||{};
-      updates[`scores.${n}.${wine.id}`] = computeWineScore(secret, guess);
-    });
-
-  const updWines = session.wines.map((w,i) =>
-  i===revealIdx ? {...w, revealed:true} : w
-  );
-
-    // Mise à jour locale immédiate
-    currentSession = { ...session, wines:updWines };
-    if (!currentSession.scores) currentSession.scores={};
-    tasters.forEach(n => {
-      if (!currentSession.scores[n]) currentSession.scores[n]={};
-      currentSession.scores[n][wine.id] = updates[`scores.${n}.${wine.id}`];
-    });
-
+    // Mettre à jour Firestore — le listener temps réel mettra à jour tous les appareils
+    const updatedWines = session.wines.map((w, i) =>
+      i === revealCurrentWineIdx ? {...w, revealed: true} : w
+    );
+    await updateDoc(sessionRef(sessionCode), { wines: updatedWines });
     hideLoading();
-    document.getElementById('reveal-waiting').style.display='none';
-    document.getElementById('reveal-result').style.display='block';
-    renderRevealResult(currentSession, wine.id);
-  } catch(e) { hideLoading(); showToast('Erreur : '+e.message); console.error(e); }
+
+    // L'UI se met à jour via le listener onSnapshot, mais on force localement
+    currentSession = {...session, wines: updatedWines};
+    document.getElementById('reveal-waiting').style.display = 'none';
+    document.getElementById('reveal-result').style.display = 'block';
+    renderRevealResult(currentSession, {...wine, revealed: true});
+  } catch(e) {
+    hideLoading();
+    showToast('Erreur : ' + e.message);
+  }
 }
 
-function renderRevealResult(session, wineId) {
-  const secret  = currentSecrets?.[wineId]||{};
-  const tasters = Object.keys(session.tasters);
+function renderRevealResult(session, wine) {
+  document.getElementById('reveal-answer-producer').textContent = wine.answer.producer || '—';
+  document.getElementById('reveal-answer-appellation').textContent = wine.answer.appellation || '—';
+  document.getElementById('reveal-answer-millesime').textContent = wine.answer.millesime || '—';
 
-  document.getElementById('reveal-answer-producer').textContent    = secret.producer    || '—';
-  document.getElementById('reveal-answer-appellation').textContent = secret.appellation || '—';
-  document.getElementById('reveal-answer-millesime').textContent   = secret.millesime   || '—';
-
-  const wineScores = tasters.map(n=>({
-    name:n, ans:(session.tasters[n].answers||{})[wineId]||{},
-    pts:session.scores?.[n]?.[wineId]??0
-  })).sort((a,b)=>b.pts-a.pts);
+  const tasterNames = Object.keys(session.tasters);
+  const wineScores = tasterNames
+    .map(n => ({ name:n, ans:(session.tasters[n].answers||{})[wine.id]||{}, pts:computeWineScore(wine.answer,(session.tasters[n].answers||{})[wine.id]||{}) }))
+    .sort((a,b) => b.pts - a.pts);
 
   document.getElementById('reveal-scores-list').innerHTML = wineScores.map(t => {
-    const pOk = norm(secret.producer)    && fuzzyMatch(secret.producer,    t.ans.producer);
-    const aOk = norm(secret.appellation) && fuzzyMatch(secret.appellation, t.ans.appellation);
-    let mPts=0;
-    if(secret.millesime&&t.ans.millesime){
-      const d=Math.abs(secret.millesime-parseInt(t.ans.millesime));
-      if(d===0) mPts=2; else if(d===1) mPts=1;
+    const pOk = norm(wine.answer.producer) && norm(wine.answer.producer) === norm(t.ans.producer);
+    const aOk = norm(wine.answer.appellation) && norm(wine.answer.appellation) === norm(t.ans.appellation);
+    let mPts = 0;
+    if (wine.answer.millesime && t.ans.millesime) {
+      const diff = Math.abs(wine.answer.millesime - parseInt(t.ans.millesime));
+      if (diff===0) mPts=2; else if (diff===1) mPts=1;
     }
-    return `<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+    return `<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
       <div class="flex-between" style="margin-bottom:6px;">
         <span style="font-weight:600;font-size:15px;">${t.name}</span>
-        <span class="pts-badge">+${t.pts} pt${t.pts!==1?'s':''}</span>
+        <span class="pts-badge">${t.pts>0?'+'+t.pts:'0'} pt${t.pts>1?'s':''}</span>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
         <span class="pill ${pOk?'pill-ok':'pill-no'}" style="font-size:11px;">${t.ans.producer||'—'}${pOk?' +5':''}</span>
@@ -1173,317 +1373,281 @@ function renderRevealResult(session, wineId) {
     </div>`;
   }).join('');
 
-  const ranked = tasters.map(n=>({name:n,score:getTotalScore(session,n)})).sort((a,b)=>b.score-a.score);
+  const ranked = tasterNames.map(n=>({name:n,score:computeScore(session,n)})).sort((a,b)=>b.score-a.score);
   document.getElementById('reveal-ranking-body').innerHTML = ranked.map((t,i)=>`
-    <tr>
-      <td><span class="rank rank-${i+1}">${['🥇','🥈','🥉'][i]||i+1}</span></td>
-      <td>${t.name}</td>
-      <td style="text-align:right;"><span class="pts-badge">${t.score} pts</span></td>
-    </tr>`).join('');
+    <tr><td><span class="rank rank-${i+1}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span></td>
+    <td>${t.name}</td>
+    <td style="text-align:right;"><span class="pts-badge">${t.score} pts</span></td></tr>`).join('');
 
-  const rem = session.wines.filter(w=>!w.revealed).length;
-  document.getElementById('reveal-next-btn').innerHTML = rem > 0
-    ? `<button class="btn btn-gold" style="font-size:15px;padding:13px 32px;" onclick="nextReveal()">Vin suivant (${rem} restant${rem>1?'s':''}) →</button>`
-    : `<p style="color:var(--or);font-family:'Playfair Display',serif;font-size:18px;margin-bottom:12px;">🏆 Dégustation terminée !</p>
-       <button class="btn btn-primary" onclick="showScreen('scores')">Voir le classement final</button>`;
+  const remaining = session.wines.filter(w=>!w.revealed).length;
+  const nextBtn = document.getElementById('reveal-next-btn');
+  if (remaining > 0) {
+    nextBtn.innerHTML = `<button class="btn btn-gold" style="font-size:15px;padding:13px 32px;" onclick="nextReveal()">Vin suivant (${remaining} restant${remaining>1?'s':''}) →</button>`;
+  } else {
+    nextBtn.innerHTML = `
+      <p style="color:var(--or);font-family:'Playfair Display',serif;font-size:18px;margin-bottom:12px;">🏆 Dégustation terminée !</p>
+      <button class="btn btn-primary" onclick="showScreen('scores')">Voir le classement final</button>`;
+  }
 }
 
 function nextReveal() {
-  revealIdx = null;
-  document.getElementById('reveal-waiting').style.display='block';
-  document.getElementById('reveal-result').style.display='none';
+  revealCurrentWineIdx = null;
+  document.getElementById('reveal-waiting').style.display = 'block';
+  document.getElementById('reveal-result').style.display = 'none';
   renderRevealScreen();
 }
 
-function toggleHistorySelection(code, checked) {
-
-  if (checked) {
-    selectedHistorySessions.add(code);
-  } else {
-    selectedHistorySessions.delete(code);
-  }
-
-  updateHistoryDeleteButton();
-}
-
-function updateHistoryDeleteButton() {
-
-  const btn = document.getElementById('history-delete-btn');
-
-  if (!btn) return;
-
-  btn.hidden = selectedHistorySessions.size === 0;
-
-  btn.textContent =
-    `🗑 Supprimer (${selectedHistorySessions.size})`;
-}
-
-/* ════════════════════════════════════════
-   HISTORIQUE
-════════════════════════════════════════ */
+/* ═══════════════════════
+   HISTORIQUE (Firestore)
+═══════════════════════ */
 async function renderHistory() {
-  document.getElementById('history-session-detail').style.display='none';
-  document.getElementById('history-list').style.display='block';
-  document.getElementById('history-global-stats').style.display='block';
-  document.getElementById('history-list').innerHTML='<p class="text-muted" style="padding:20px 0;">Chargement…</p>';
-  document.getElementById('history-global-stats').innerHTML='';
+  document.getElementById('history-list').innerHTML = '<p class="text-muted" style="font-size:13px;padding:20px 0;">Chargement…</p>';
+  document.getElementById('history-global-stats').innerHTML = '';
   try {
-    const snap     = await getDocs(collection(db,'sessions'));
-    const sessions = snap.docs.map(d=>d.data());
-    if (!sessions.length) {
-      document.getElementById('history-list').innerHTML='<div class="empty-state"><div class="big-icon">📜</div><p>Aucune session pour l\'instant.</p></div>';
+    const snap = await getDocs(collection(db, 'sessions'));
+    const sessions = snap.docs.map(d => d.data());
+
+    if (sessions.length === 0) {
+      document.getElementById('history-list').innerHTML = `<div class="empty-state"><div class="big-icon">📜</div><p>Aucune session pour l'instant.</p></div>`;
       return;
     }
 
-    const totals={};
+    // Stats globales
+    const playerTotals = {};
     sessions.forEach(s => {
       Object.keys(s.tasters).forEach(n => {
-        if(!totals[n]) totals[n]={sessions:0,points:0,wins:0};
-        totals[n].sessions++;
-        totals[n].points+=getTotalScore(s,n);
-        const top=Object.keys(s.tasters).sort((a,b)=>getTotalScore(s,b)-getTotalScore(s,a))[0];
-        if(top===n) totals[n].wins++;
+        if (!playerTotals[n]) playerTotals[n] = {sessions:0, points:0, wins:0};
+        playerTotals[n].sessions++;
+        playerTotals[n].points += computeScore(s, n);
+        const ranked = Object.keys(s.tasters).map(nm=>({nm,score:computeScore(s,nm)})).sort((a,b)=>b.score-a.score);
+        if (ranked[0]?.nm === n) playerTotals[n].wins++;
       });
     });
-    const sorted=Object.entries(totals).sort((a,b)=>b[1].points-a[1].points);
+    const sortedPlayers = Object.entries(playerTotals).sort((a,b)=>b[1].points-a[1].points);
 
-    document.getElementById('history-global-stats').innerHTML=`
+    document.getElementById('history-global-stats').innerHTML = `
       <div class="card card-dark">
-        <h3 style="margin-bottom:12px;">Classement toutes sessions</h3>
+        <h3 style="margin-bottom:12px;">Classement général toutes sessions</h3>
         <table class="score-table">
-          <thead><tr><th>#</th><th>Joueur</th><th>Sessions</th><th>Victoires</th><th style="text-align:right;">Total</th></tr></thead>
-          <tbody>${sorted.map(([n,s],i)=>`<tr>
-            <td><span class="rank rank-${i+1}">${['🥇','🥈','🥉'][i]||i+1}</span></td>
+          <thead><tr><th>#</th><th>Joueur</th><th>Sessions</th><th>Victoires</th><th style="text-align:right;">Total pts</th></tr></thead>
+          <tbody>${sortedPlayers.map(([n,s],i)=>`<tr>
+            <td><span class="rank rank-${i+1}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span></td>
             <td style="font-weight:500;">${n}</td>
             <td style="color:var(--gris);">${s.sessions}</td>
-            <td>${s.wins>0?'🏆'.repeat(Math.min(s.wins,3))+(s.wins>3?' ×'+s.wins:''):'—'}</td>
+            <td>${s.wins>0?'🏆'.repeat(Math.min(s.wins,3))+(s.wins>3?' x'+s.wins:''):'—'}</td>
             <td style="text-align:right;"><span class="pts-badge">${s.points}</span></td>
           </tr>`).join('')}</tbody>
         </table>
       </div>`;
 
-    document.getElementById('history-list').innerHTML=`
+    document.getElementById('history-list').innerHTML = `
       <h3 style="margin-bottom:12px;">Sessions passées</h3>
-      ${sessions.sort((a,b)=>b.createdAt-a.createdAt).map(s=>{
-        const date=new Date(s.createdAt).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
-        const rev=s.wines.filter(w=>w.revealed).length;
-        const top=Object.keys(s.tasters).sort((a,b)=>getTotalScore(s,b)-getTotalScore(s,a))[0];
-        return `
-<div class="session-tile">
-  
-  <div style="display:flex;align-items:flex-start;gap:12px;width:100%;">
-    
-    <input type="checkbox"
-           style="margin-top:4px;"
-           onchange="toggleHistorySelection('${s.code}', this.checked)"
-           onclick="event.stopPropagation()">
-
-    <div style="flex:1;cursor:pointer;"
-         onclick="showHistoryDetail('${s.code}')">
-
-      <div class="session-tile-name">${s.name}</div>
-
-      <div class="session-tile-meta">
-        ${date} · ${Object.keys(s.tasters).length} joueur(s) · ${rev}/${s.wines.length} vins
-      </div>
-
-      ${top ? `
-        <div style="font-size:12px;color:var(--or);margin-top:3px;">
-          🏆 ${top} — ${getTotalScore(s,top)} pts
-        </div>` : ''}
-
-    </div>
-
-    <span class="pill ${s.status==='active'?'pill-ok':'pill-no'}">
-      ${s.status==='active'?'En cours':'Terminée'}
-    </span>
-
-  </div>
-</div>`;
+      ${sessions.sort((a,b)=>b.createdAt-a.createdAt).map(s => {
+        const date = new Date(s.createdAt).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
+        const topPlayer = Object.keys(s.tasters).sort((a,b)=>computeScore(s,b)-computeScore(s,a))[0];
+        const revealed = s.wines.filter(w=>w.revealed).length;
+        return `<div class="session-tile" onclick="showHistoryDetail('${s.code}')">
+          <div>
+            <div class="session-tile-name">${s.name}</div>
+            <div class="session-tile-meta">${date} · ${Object.keys(s.tasters).length} joueur(s) · ${revealed}/${s.wines.length} vins</div>
+            ${topPlayer?`<div style="font-size:12px;color:var(--or);margin-top:3px;">🏆 ${topPlayer} — ${computeScore(s,topPlayer)} pts</div>`:''}
+          </div>
+          <span class="pill ${s.status==='active'?'pill-ok':'pill-no'}">${s.status==='active'?'En cours':'Terminée'}</span>
+        </div>`;
       }).join('')}`;
   } catch(e) {
-    document.getElementById('history-list').innerHTML=`<p class="text-muted">Erreur : ${e.message}</p>`;
-  }
-}
-
-async function deleteSelectedSessions() {
-  if (!selectedHistorySessions.size) return;
-  const confirmed = confirm(
-    `Supprimer ${selectedHistorySessions.size} session(s) ?`
-  );
-  if (!confirmed) return;
-  showLoading('Suppression…');
-  try {
-    for (const code of selectedHistorySessions) {
-      // Supprime secrets
-      try {
-        await deleteDoc(xRef(code));
-      } catch(e) {}
-      // Supprime session publique
-      await deleteDoc(sRef(code));
-    }
-    selectedHistorySessions.clear();
-    hideLoading();
-    showToast('Sessions supprimées');
-    renderHistory();
-  } catch(e) {
-    hideLoading();
-    showToast('Erreur : ' + e.message);
-    console.error(e);
+    document.getElementById('history-list').innerHTML = `<p class="text-muted">Erreur de chargement : ${e.message}</p>`;
   }
 }
 
 async function showHistoryDetail(code) {
   showLoading('Chargement…');
   try {
-    const snap=await getDoc(sRef(code));
-    if(!snap.exists()){ hideLoading(); return; }
-    const s=snap.data(); hideLoading();
-    const tasters=Object.keys(s.tasters);
-    const ranked=tasters.map(n=>({name:n,score:getTotalScore(s,n)})).sort((a,b)=>b.score-a.score);
-    const date=new Date(s.createdAt).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const snap = await getDoc(sessionRef(code));
+    if (!snap.exists()) { hideLoading(); return; }
+    const session = snap.data();
+    hideLoading();
 
-    let html=`
+    const tasterNames = Object.keys(session.tasters);
+    const ranked = tasterNames.map(n=>({name:n,score:computeScore(session,n)})).sort((a,b)=>b.score-a.score);
+    const date = new Date(session.createdAt).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+    let html = `
       <div class="card card-dark" style="margin-bottom:16px;">
-        <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--or);margin-bottom:4px;">${s.name}</div>
-        <div class="text-muted" style="font-size:13px;">${date} · Organisateur : ${s.host}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--or);margin-bottom:4px;">${session.name}</div>
+        <div class="text-muted" style="font-size:13px;">${date} · Animateur : ${session.host}</div>
       </div>
       <div class="card" style="margin-bottom:16px;">
         <h3>Classement final</h3>
         <table class="score-table">
           <thead><tr><th>#</th><th>Joueur</th><th style="text-align:right;">Points</th></tr></thead>
           <tbody>${ranked.map((t,i)=>`<tr>
-            <td><span class="rank rank-${i+1}">${['🥇','🥈','🥉'][i]||i+1}</span></td>
+            <td><span class="rank rank-${i+1}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span></td>
             <td>${t.name}</td>
             <td style="text-align:right;"><span class="pts-badge">${t.score} pts</span></td>
           </tr>`).join('')}</tbody>
         </table>
       </div>`;
 
-    s.wines.forEach((w,i)=>{
-      html+=`<div class="card card-dark" style="margin-bottom:12px;">
+    session.wines.forEach((w,idx) => {
+      html += `<div class="card card-dark" style="margin-bottom:12px;">
         <div class="flex-between" style="margin-bottom:8px;">
-          <span style="font-family:'Playfair Display',serif;color:var(--or);">Vin ${i+1}</span>
-          <span class="pill ${w.revealed?'pill-ok':'pill-warn'}">${w.revealed?'Révélé':'Non révélé'}</span>
+          <span style="font-family:'Playfair Display',serif;color:var(--or);">Vin ${idx+1}</span>
+          ${w.revealed?'<span class="pill pill-ok" style="font-size:11px;">Révélé</span>':'<span class="pill pill-warn" style="font-size:11px;">Non révélé</span>'}
         </div>
         ${w.revealed?`
-        <table class="score-table">
-          <thead><tr><th>Joueur</th><th>Réponses</th><th style="text-align:right;">Pts</th></tr></thead>
-          <tbody>${tasters.map(n=>{
-            const a=(s.tasters[n].answers||{})[w.id]||{};
-            const p=s.scores?.[n]?.[w.id]??0;
-            return `<tr>
-              <td style="font-size:13px;">${n}</td>
-              <td style="font-size:12px;color:var(--gris);">${a.producer||'—'} / ${a.appellation||'—'} / ${a.millesime||'—'}</td>
-              <td style="text-align:right;"><span class="pts-badge">${p}</span></td>
-            </tr>`;
-          }).join('')}</tbody>
-        </table>`:'<p class="text-muted" style="font-size:13px;">Pas encore révélé.</p>'}
+          <div style="font-size:13px;color:var(--parchemin);margin-bottom:10px;">
+            <span style="color:var(--or);">${w.answer.producer||'?'}</span> · ${w.answer.appellation||'?'} · ${w.answer.millesime||'?'}
+          </div>
+          <table class="score-table">
+            <thead><tr><th>Joueur</th><th>Réponses</th><th style="text-align:right;">Pts</th></tr></thead>
+            <tbody>${tasterNames.map(n=>{
+              const ans=(session.tasters[n].answers||{})[w.id]||{};
+              return `<tr>
+                <td style="font-size:13px;">${n}</td>
+                <td style="font-size:12px;color:var(--gris);">${ans.producer||'—'} / ${ans.appellation||'—'} / ${ans.millesime||'—'}</td>
+                <td style="text-align:right;"><span class="pts-badge">${computeWineScore(w.answer,ans)}</span></td>
+              </tr>`;
+            }).join('')}</tbody>
+          </table>`:'<p class="text-muted" style="font-size:13px;">Pas encore révélé.</p>'}
       </div>`;
     });
 
-    if(s.status==='active') html+=`<button class="btn btn-primary btn-full" onclick="rejoinFromHistory('${code}')">↩ Reprendre cette session</button>`;
-    document.getElementById('history-session-detail-content').innerHTML=html;
-    document.getElementById('history-session-detail').style.display='block';
-    document.getElementById('history-list').style.display='none';
-    document.getElementById('history-global-stats').style.display='none';
-  } catch(e){ hideLoading(); showToast('Erreur : '+e.message); }
+    if (session.status === 'active') {
+      html += `<button class="btn btn-primary btn-full" onclick="rejoinFromHistory('${code}')">↩ Reprendre cette session</button>`;
+    }
+
+    document.getElementById('history-session-detail-content').innerHTML = html;
+    document.getElementById('history-session-detail').style.display = 'block';
+    document.getElementById('history-list').style.display = 'none';
+    document.getElementById('history-global-stats').style.display = 'none';
+  } catch(e) {
+    hideLoading();
+    showToast('Erreur : ' + e.message);
+  }
 }
 
 function backToHistoryList() {
-  document.getElementById('history-session-detail').style.display='none';
-  document.getElementById('history-list').style.display='block';
-  document.getElementById('history-global-stats').style.display='block';
+  document.getElementById('history-session-detail').style.display = 'none';
+  document.getElementById('history-list').style.display = 'block';
+  document.getElementById('history-global-stats').style.display = 'block';
 }
 
 async function rejoinFromHistory(code) {
-  const name=prompt('Votre prénom :');
-  if(!name) return;
+  const name = prompt('Votre prénom :');
+  if (!name) return;
   showLoading('Connexion…');
   try {
-    const snap=await getDoc(sRef(code));
-    if(!snap.exists()){ hideLoading(); showToast('Session introuvable'); return; }
-    const s=snap.data();
-    if(!s.tasters[name]) await updateDoc(sRef(code),{[`tasters.${name}`]:{answers:{}}});
-    currentUser={name,role:'taster',sessionCode:code};
-    currentSession=s; currentSecrets=null;
-    saveUser(); subscribeSession(code);
-    hideLoading(); showScreen('session');
-  } catch(e){ hideLoading(); showToast('Erreur : '+e.message); }
+    const snap = await getDoc(sessionRef(code));
+    if (!snap.exists()) { hideLoading(); showToast('Session introuvable'); return; }
+    const session = snap.data();
+    if (!session.tasters[name]) {
+      await updateDoc(sessionRef(code), { [`tasters.${name}`]: { answers: {}, submitted: false } });
+    }
+    currentUser = { name, role: session.host===name?'host':'taster', sessionCode: code };
+    saveUser();
+    currentSession = session;
+    subscribeToSession(code);
+    hideLoading();
+    showScreen('session');
+  } catch(e) { hideLoading(); showToast('Erreur : ' + e.message); }
 }
 
-/* ════════════════════════════════════════
-   UTILITAIRES SESSION
-════════════════════════════════════════ */
+/* ═══════════════════════
+   UTILITAIRES
+═══════════════════════ */
 function copySessionCode() {
-  if(!currentUser) return;
-  const code=currentUser.sessionCode;
-  navigator.clipboard.writeText(code).then(()=>showToast('Code copié : '+code)).catch(()=>showToast('Code : '+code));
+  if (!currentUser) return;
+  const code = currentUser.sessionCode;
+  navigator.clipboard.writeText(code).then(() => showToast('Code copié : ' + code)).catch(() => showToast('Code : ' + code));
 }
 
 function leaveSession() {
-  if(!confirm('Quitter la session en cours ?')) return;
-  if(unsubscribe){ unsubscribe(); unsubscribe=null; }
-  currentUser=null; currentSession=null; currentSecrets=null;
+  if (!confirm('Quitter la session en cours ?')) return;
+  if (unsubscribeSession) { unsubscribeSession(); unsubscribeSession = null; }
+  currentUser = null; currentSession = null;
   localStorage.removeItem(LOCAL_KEY);
-  document.getElementById('nav-reveal').style.display='none';
+  const navReveal = document.getElementById('nav-reveal');
+  if (navReveal) navReveal.style.display = 'none';
   showToast('Session quittée');
   showScreen('home');
 }
 
 async function endSession() {
-  if(!currentUser||currentUser.role!=='host') return;
-  if(!confirm('Clore définitivement cette session ?')) return;
+  if (!currentUser) return;
+  if (!confirm('Clore définitivement cette session ?')) return;
   showLoading('Clôture…');
   try {
-    await updateDoc(sRef(currentUser.sessionCode),{status:'closed'});
-    hideLoading(); leaveSession();
-  } catch(e){ hideLoading(); showToast('Erreur : '+e.message); }
+    const updatedWines = currentSession.wines.map(w => ({...w, revealed: true}));
+    await updateDoc(sessionRef(currentUser.sessionCode), { status: 'closed', wines: updatedWines });
+    hideLoading();
+    leaveSession();
+  } catch(e) { hideLoading(); showToast('Erreur : ' + e.message); }
 }
 
-/* ════════════════════════════════════════
-   INIT — reconnexion automatique
-════════════════════════════════════════ */
+/* ═══════════════════════
+   AUTOCOMPLETE
+═══════════════════════ */
+const APPELLATIONS = [
+  'Bordeaux','Médoc','Pomerol','Saint-Émilion','Pauillac','Saint-Julien','Margaux','Saint-Estèphe',
+  'Pessac-Léognan','Sauternes','Bourgogne','Gevrey-Chambertin','Nuits-Saint-Georges','Pommard','Volnay',
+  'Meursault','Puligny-Montrachet','Chassagne-Montrachet','Chablis','Mâcon','Pouilly-Fuissé',
+  'Côte Rôtie','Condrieu','Hermitage','Crozes-Hermitage','Saint-Joseph','Châteauneuf-du-Pape',
+  'Gigondas','Vacqueyras','Ventoux','Luberon','Bandol','Cassis','Languedoc','Corbières',
+  'Minervois','Fitou','Roussillon','Alsace','Alsace Grand Cru','Gewurztraminer',
+  'Muscadet','Vouvray','Chinon','Bourgueil','Sancerre','Pouilly-Fumé','Menetou-Salon',
+  'Champagne',"Crémant d'Alsace",'Crémant de Bourgogne','Côtes du Rhône',"IGP Pays d'Oc",
+  'Barolo','Barbaresco','Chianti Classico','Brunello di Montalcino','Amarone','Rioja','Ribera del Duero',
+  'Priorat','Albariño','Champagne Blanc de Blancs','Champagne Blanc de Noirs'
+];
+
+/* ═══════════════════════
+   INIT
+═══════════════════════ */
 loadUser();
-if(currentUser?.sessionCode) {
+// Si on avait une session active, se reconnecter
+if (currentUser?.sessionCode) {
   showLoading('Reconnexion…');
-  getDoc(sRef(currentUser.sessionCode)).then(async snap=>{
+  getDoc(sessionRef(currentUser.sessionCode)).then(snap => {
     hideLoading();
-    if(snap.exists()&&snap.data().status==='active') {
-      currentSession=snap.data();
-      if(currentUser.role==='host'&&currentUser.pwHash) {
-        try { const sec=await getDoc(xRef(currentUser.sessionCode)); currentSecrets=sec.exists()?sec.data().wines:{}; } catch(e){}
-      }
-      subscribeSession(currentUser.sessionCode);
+    if (snap.exists() && snap.data().status === 'active') {
+      currentSession = snap.data();
+      subscribeToSession(currentUser.sessionCode);
       showScreen('session');
     } else {
-      currentUser=null; localStorage.removeItem(LOCAL_KEY);
+      currentUser = null;
+      localStorage.removeItem(LOCAL_KEY);
     }
-  }).catch(()=>hideLoading());
+  }).catch(() => { hideLoading(); });
 }
 
-/* ════════════════════════════════════════
-   EXPOSITION — Fix #4 : window.* en bas,
-   après toutes les déclarations de fonctions
-════════════════════════════════════════ */
-window.showScreen        = showScreen;
-window.addWineRow        = addWineRow;
-window.addWineRowRemove  = addWineRowRemove;
-window.createSession     = createSession;
-window.joinSession       = joinSession;
-window.toggleWine        = toggleWine;
-window.saveAnswer        = saveAnswer;
-window.renderScores      = renderScores;
-window.doReveal          = doReveal;
-window.nextReveal        = nextReveal;
-window.leaveSession      = leaveSession;
-window.copySessionCode   = copySessionCode;
-window.renderHistory     = renderHistory;
-window.backToHistoryList = backToHistoryList;
-window.endSession        = endSession;
-window.rejoinFromHistory = rejoinFromHistory;
-window.showHistoryDetail = showHistoryDetail;
+window.showScreen              = showScreen;
+window.addWineRow              = addWineRow;
+window.addWineRowRemove        = addWineRowRemove;
+window.createSession           = createSession;
+window.joinSession             = joinSession;
+window.quickJoinSession        = quickJoinSession;
+window.renderAvailableSessions = renderAvailableSessions;
+window.toggleWine              = toggleWine;
+window.toggleWineEntry         = toggleWineEntry;
+window.saveAnswer              = saveAnswer;
+window.refreshScores           = refreshScores;
+window.renderScores            = renderScores;
+window.doReveal                = doReveal;
+window.nextReveal              = nextReveal;
+window.leaveSession            = leaveSession;
+window.copySessionCode         = copySessionCode;
+window.renderHistory           = renderHistory;
+window.backToHistoryList       = backToHistoryList;
+window.exportData              = exportData;
+window.importData              = importData;
+window.endSession              = endSession;
+window.rejoinFromHistory       = rejoinFromHistory;
+window.showHistoryDetail       = showHistoryDetail;
+window.toggleHistorySelection  = toggleHistorySelection;
+window.deleteSelectedSessions  = deleteSelectedSessions;
 
 </script>
-</body>
-</html>
+
+
+</body></html>
