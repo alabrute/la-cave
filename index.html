@@ -1016,7 +1016,7 @@ async function renderAvailableSessions() {
 async function quickJoinSession(code) {
   const name     = document.getElementById('join-name')?.value.trim() || '';
   const password = document.getElementById('join-password')?.value.trim() || '';
-  if (!name) { showToast('Entrez votre prénom d abord'); return; }
+  if (!name) { showToast("Entrez votre prénom d'abord"); return; }
 
   showLoading('Connexion…');
   try {
