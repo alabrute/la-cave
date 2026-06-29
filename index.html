@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Cave — Dégustation à l'aveugle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com/">
-<link href="./La Cave — Dégustation à l&#39;aveugle_files/css2" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet">
 <style>
   :root {
     --noir: #1A0A0A;
@@ -616,16 +619,18 @@
     <div class="flex-between" style="margin-bottom:20px;">
       <h2 style="margin:0;">Historique</h2>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="btn btn-danger btn-sm" id="history-delete-btn" style="display:none;" onclick="deleteSelectedSessions()">🗑 Supprimer</button>
+        <button class="btn btn-danger btn-sm"
+        id="history-delete-btn"
+        hidden
+        onclick="deleteSelectedSessions()">
+  🗑 Supprimer
+        </button>
         <button class="btn btn-ghost btn-sm" onclick="renderHistory()">↻</button>
       </div>
     </div>
 
 
       <div style="display:flex;gap:10px;margin-bottom:16px;">
-        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="exportData()">⬇ Exporter les données</button>
-        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="document.getElementById(&#39;import-file&#39;).click()">⬆ Importer</button>
-        <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(this)">
       </div>
     <div id="history-global-stats" style="margin-bottom:16px;"></div>
 
@@ -816,8 +821,6 @@ function generateCode() {
 
 function norm(s) { return (s||'').trim().toLowerCase(); }
 
-window.exportData = function () {
-  console.log("Export lancé");
 
   // exemple simple
   const data = localStorage.getItem("cave");
@@ -1475,35 +1478,52 @@ function nextReveal() {
 ═══════════════════════ */
 let selectedHistorySessions = new Set();
 
-function toggleHistorySelection(code, checked) {
-  if (checked) selectedHistorySessions.add(code);
-  else         selectedHistorySessions.delete(code);
-  const btn = document.getElementById('history-delete-btn');
-  if (!btn) return;
-  if (selectedHistorySessions.size === 0) {
-    btn.style.display = 'none';
+function toggleHistorySelection(code, checked){
+  if(checked){
+    selectedHistorySessions.add(code);
   } else {
-    btn.style.display  = 'inline-flex';
-    btn.textContent    = '🗑 Supprimer (' + selectedHistorySessions.size + ')';
+    selectedHistorySessions.delete(code);
   }
+  updateHistoryDeleteButton();
 }
 
-async function deleteSelectedSessions() {
-  if (!selectedHistorySessions.size) return;
-  if (!confirm('Supprimer ' + selectedHistorySessions.size + ' session(s) définitivement ?')) return;
-  showLoading('Suppression…');
+function updateHistoryDeleteButton(){
+  const btn =
+    document.getElementById('history-delete-btn');
+  if(!btn) return;
+  btn.hidden =
+    selectedHistorySessions.size === 0;
+  btn.textContent =
+    `🗑 Supprimer (${selectedHistorySessions.size})`;
+}
+
+async function deleteSelectedSessions(){
+  if(!selectedHistorySessions.size){
+    return;
+  }
+
+  const ok = confirm(
+    `Supprimer ${selectedHistorySessions.size} session(s) ?`
+  );
+  if(!ok) return;
   try {
-    for (const code of selectedHistorySessions) {
-      try { await deleteDoc(xRef(code)); } catch(e) {}
+    showLoading('Suppression…');
+    for(const code of selectedHistorySessions){
+      try{
+        await deleteDoc(xRef(code));
+      } catch(e){}
       await deleteDoc(sRef(code));
     }
+
     selectedHistorySessions.clear();
-    const btn = document.getElementById('history-delete-btn');
-    if (btn) btn.style.display = 'none';
     hideLoading();
     showToast('Sessions supprimées');
     renderHistory();
-  } catch(e) { hideLoading(); showToast('Erreur : ' + e.message); }
+  } catch(e){
+    hideLoading();
+    console.error(e);
+    showToast('Erreur suppression');
+  }
 }
 
 /* ═══════════════════════
@@ -1667,6 +1687,14 @@ async function rejoinFromHistory(code) {
   } catch(e) { hideLoading(); showToast('Erreur : ' + e.message); }
 }
 
+function removeWineRow(index){
+  const row =
+    document.getElementById(`wine-row-${index}`);
+  if(row){
+    row.remove();
+  }
+}
+
 /* ═══════════════════════
    UTILITAIRES
 ═══════════════════════ */
@@ -1737,12 +1765,10 @@ if (currentUser?.sessionCode) {
 
 window.showScreen              = showScreen;
 window.addWineRow              = addWineRow;
-window.addWineRowRemove        = addWineRowRemove;
 window.createSession           = createSession;
 window.joinSession             = joinSession;
 window.quickJoinSession        = quickJoinSession;
 window.renderAvailableSessions = renderAvailableSessions;
-window.toggleWine              = toggleWine;
 window.toggleWineEntry         = toggleWineEntry;
 window.saveAnswer              = saveAnswer;
 window.refreshScores           = refreshScores;
@@ -1753,8 +1779,6 @@ window.leaveSession            = leaveSession;
 window.copySessionCode         = copySessionCode;
 window.renderHistory           = renderHistory;
 window.backToHistoryList       = backToHistoryList;
-window.exportData              = exportData;
-window.importData              = importData;
 window.endSession              = endSession;
 window.rejoinFromHistory       = rejoinFromHistory;
 window.showHistoryDetail       = showHistoryDetail;
