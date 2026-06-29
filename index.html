@@ -875,6 +875,14 @@ function sessionRef(code) {
   return doc(db, 'sessions', code);
 }
 
+function sRef(code) {
+  return doc(db, "sessions", code);
+}
+
+function xRef(code) {
+  return doc(db, "collection", code);
+}
+
 // Démarre l'écoute temps réel de la session active
 function subscribeToSession(code) {
   if (unsubscribeSession) unsubscribeSession();
