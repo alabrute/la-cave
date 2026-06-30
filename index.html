@@ -798,6 +798,7 @@ const db = getFirestore(firebaseApp);
 let currentUser = null;   // {name, role:'host'|'taster', sessionCode}
 let currentSession = null; // snapshot local de la session active
 let unsubscribeSession = null; // listener Firestore en cours
+let CurrentSecrets = null;
 
 const LOCAL_KEY = 'la_cave_user';
 
