@@ -798,7 +798,7 @@ const db = getFirestore(firebaseApp);
 let currentUser = null;   // {name, role:'host'|'taster', sessionCode}
 let currentSession = null; // snapshot local de la session active
 let unsubscribeSession = null; // listener Firestore en cours
-let CurrentSecrets = null;
+let currentSecrets = null;
 
 const LOCAL_KEY = 'la_cave_user';
 
@@ -821,16 +821,6 @@ function generateCode() {
 }
 
 function norm(s) { return (s||'').trim().toLowerCase(); }
-
-
-  // exemple simple
-  const data = localStorage.getItem("cave");
-  const blob = new Blob([data || ""], { type: "application/json" });
-
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "cave-export.json";
-  a.click();
 
 function showToast(msg, duration=2500) {
   const t = document.getElementById('toast');
