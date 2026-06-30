@@ -1495,13 +1495,14 @@ function toggleHistorySelection(code, checked){
 }
 
 function updateHistoryDeleteButton(){
-  const btn =
-    document.getElementById('history-delete-btn');
+  const btn = document.getElementById('history-delete-btn');
   if(!btn) return;
-  btn.hidden =
-    selectedHistorySessions.size === 0;
-  btn.textContent =
-    `🗑 Supprimer (${selectedHistorySessions.size})`;
+  if (selectedHistorySessions.size === 0) {
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = 'inline-flex';
+  }
+  btn.textContent = `🗑 Supprimer (${selectedHistorySessions.size})`;
 }
 
 async function deleteSelectedSessions(){
