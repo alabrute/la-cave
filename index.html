@@ -1047,7 +1047,7 @@ async function quickJoinSession(code) {
       currentSecrets = sec.exists() ? sec.data().wines : {};
     }
 
-    subscribeSession(code);
+    subscribeToSession(code);
     hideLoading();
     showScreen('session');
   } catch(e) { hideLoading(); showToast('Erreur : ' + e.message); console.error(e); }
