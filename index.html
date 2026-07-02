@@ -424,10 +424,14 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <div class="reveal-row correct" style="flex-direction:column;gap:2px;">
           <span class="field-label">Producteur exact</span>
-          <div class="flex-between"><span class="field-val">Correct</span><span class="pts-got">+5 pts</span></div>
+          <div class="flex-between"><span class="field-val">Correct</span><span class="pts-got">+10 pts</span></div>
         </div>
         <div class="reveal-row partial" style="flex-direction:column;gap:2px;">
           <span class="field-label">Appellation exacte</span>
+          <div class="flex-between"><span class="field-val">Correct</span><span class="pts-got">+5 pts</span></div>
+        </div>
+        <div class="reveal-row partial" style="flex-direction:column;gap:2px;">
+          <span class="field-label">Région exacte</span>
           <div class="flex-between"><span class="field-val">Correct</span><span class="pts-got">+3 pts</span></div>
         </div>
         <div class="reveal-row correct" style="flex-direction:column;gap:2px;">
@@ -699,6 +703,35 @@
   </option><option value="Languedoc">
 </option></datalist>
 
+<datalist id="regions_list">
+  <option value="Alsace">
+  <option value="Beaujolais">
+  <option value="Bordeaux">
+  <option value="Bourgogne">
+  <option value="Champagne">
+  <option value="Corse">
+  <option value="Jura">
+  <option value="Languedoc-Roussillon">
+  <option value="Loire">
+  <option value="Provence">
+  <option value="Rhône Nord">
+  <option value="Rhône Sud">
+  <option value="Savoie">
+  <option value="Sud-Ouest">
+  <option value="Italie">
+  <option value="Espagne">
+  <option value="Portugal">
+  <option value="Allemagne">
+  <option value="Autriche">
+  <option value="Grèce">
+  <option value="États-Unis">
+  <option value="Chili">
+  <option value="Argentine">
+  <option value="Afrique du Sud">
+  <option value="Australie">
+  <option value="Nouvelle-Zélande">
+</datalist>
+
   <!-- ═══════════════════════════════════
        ÉCRAN RÉVÉLATION (ANIMATEUR)
   ═══════════════════════════════════════ -->
@@ -731,6 +764,7 @@
       <div class="card card-dark" style="text-align:center;padding:24px 20px;margin-bottom:16px;">
         <p class="text-muted" style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">La bonne réponse</p>
         <div id="reveal-answer-producer" style="font-family:&#39;Playfair Display&#39;,serif;font-size:22px;color:var(--or);margin-bottom:4px;"></div>
+        <div id="reveal-answer-region" style="font-size:16px;color:var(--parchemin);margin-bottom:4px;"></div>
         <div id="reveal-answer-appellation" style="font-size:16px;color:var(--parchemin);margin-bottom:4px;"></div>
         <div id="reveal-answer-millesime" style="font-size:28px;font-family:&#39;Playfair Display&#39;,serif;color:var(--or-light);"></div>
       </div>
@@ -914,6 +948,10 @@ function addWineRow() {
         <input type="text" id="${id}_producer" placeholder="ex: Romanée-Conti">
       </div>
       <div class="form-group" style="margin-bottom:8px;">
+        <label style="font-size:11px;">Région</label>
+        <input type="text" id="${id}_region" placeholder="ex : Bourgogne" list="regions_list">
+        </div>
+      <div class="form-group" style="margin-bottom:8px;">
         <label style="font-size:11px;">Appellation</label>
         <input type="text" id="${id}_appellation" placeholder="ex: Gevrey-Chambertin" list="appellations_list">
       </div>
@@ -936,10 +974,11 @@ async function createSession() {
   document.querySelectorAll('[id^="row_wine_"]').forEach(row => {
     const wid = row.id.replace('row_','');
     const p = document.getElementById(wid+'_producer').value.trim();
+    const r = document.getElementById(wid+'_region')?.value.trim() || '';
     const a = document.getElementById(wid+'_appellation').value.trim();
     const m = parseInt(document.getElementById(wid+'_millesime').value) || 0;
     if (p || a || m) {
-      wines.push({ id: wid, label: 'Vin '+idx++, answer: {producer:p, appellation:a, millesime:m}, revealed: false });
+      wines.push({ id: wid, label: 'Vin '+idx++, answer: {producer:p, region:r, appellation:a, millesime:m}, revealed: false });
     }
   });
 
@@ -1105,7 +1144,7 @@ function renderSessionScreen() {
 
   const answered = session.wines.filter(w => {
     const a = taster.answers[w.id];
-    return a && (a.producer || a.appellation || a.millesime);
+    return a && (a.producer || a.region || a.appellation || a.millesime);
   }).length;
   document.getElementById('session-progress').style.width = (answered/session.wines.length*100)+'%';
 
@@ -1121,7 +1160,7 @@ function renderSessionScreen() {
     const div = document.createElement('div');
     div.className = 'wine-item';
 
-    const hasSomething = ans.producer || ans.appellation || ans.millesime;
+    const hasSomething = ans.producer || a.region || ans.appellation || ans.millesime;
     const statusText = isRevealed ? '🔓 Révélé' : (hasSomething ? '✓ Saisi' : '...');
 
     let bodyContent = '';
@@ -1131,6 +1170,7 @@ function renderSessionScreen() {
         <div style="margin-bottom:12px;">
           <p class="text-muted" style="font-size:12px;margin-bottom:8px;">Vos réponses</p>
           <div class="reveal-row"><span class="field-label">Producteur</span><span class="field-val">${ans.producer||'—'}</span></div>
+          <div class="reveal-row"><span class="field-label">Region</span><span class="field-val">${ans.region||'—'}</span></div>
           <div class="reveal-row"><span class="field-label">Appellation</span><span class="field-val">${ans.appellation||'—'}</span></div>
           <div class="reveal-row"><span class="field-label">Millésime</span><span class="field-val">${ans.millesime||'—'}</span></div>
         </div>
@@ -1145,6 +1185,11 @@ function renderSessionScreen() {
           <label>Producteur</label>
           <input type="text" id="inp_${wine.id}_producer" value="${ans.producer||''}" placeholder="Votre réponse…"
             oninput="saveAnswer('${wine.id}','producer',this.value)">
+        </div>
+        <div class="form-group">
+            <label>Région</label>
+            <input type="text" id="inp_${wine.id}_region" value="${ans.region||''}" placeholder="Votre réponse…" list="regions_list"
+                oninput="saveAnswer('${wine.id}','region',this.value)">
         </div>
         <div class="form-group">
           <label>Appellation</label>
@@ -1173,7 +1218,7 @@ function renderSessionScreen() {
   if (openIds.size === 0) {
     const first = session.wines.find(w => {
       const a = taster.answers[w.id];
-      return !w.revealed && (!a || (!a.producer && !a.appellation && !a.millesime));
+      return !w.revealed && (!a || (!a.producer && !a.region && !a.appellation && !a.millesime));
     });
     if (first) document.getElementById('body_'+first.id)?.classList.add('open');
   }
@@ -1201,7 +1246,7 @@ function saveAnswer(wineId, field, value) {
   document.getElementById('session-my-score').textContent = myScore + ' pts';
   const taster = currentSession.tasters[name];
   const answered = currentSession.wines.filter(w => {
-    const a = taster.answers[w.id]; return a && (a.producer || a.appellation || a.millesime);
+    const a = taster.answers[w.id]; return a && (a.producer || a.region || a.appellation || a.millesime);
   }).length;
   document.getElementById('session-progress').style.width = (answered/currentSession.wines.length*100)+'%';
 
@@ -1216,17 +1261,56 @@ function saveAnswer(wineId, field, value) {
   }, 500);
 }
 
+const STOP_WORDS = new Set([
+  'domaine','domaines','chateau','chateaux','maison','cave','caves',
+  'clos','mas','abbaye','prieure','vignoble','vignobles','propriete',
+  'estate','winery','cellars','cellar','de','du','des','le','la',
+  'les','et','of','the','di','del','&'
+]);
+
+function cleanName(s) {
+  return (s||'').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 0 && !STOP_WORDS.has(w))
+    .join(' ').trim();
+}
+
+function levenshtein(a, b) {
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const dp = Array.from({length: a.length+1}, (_,i) => [i]);
+  for (let j=1; j<=b.length; j++) dp[0][j]=j;
+  for (let i=1; i<=a.length; i++)
+    for (let j=1; j<=b.length; j++)
+      dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1]
+        : 1+Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[a.length][b.length];
+}
+
+function fuzzyMatch(ref, guess) {
+  if (!ref || !guess) return false;
+  const a = cleanName(ref);
+  const b = cleanName(guess);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const threshold = Math.min(3, Math.max(1, Math.floor(Math.max(a.length, b.length) * 0.2)));
+  return levenshtein(a, b) <= threshold;
+}
+
 /* ═══════════════════════
    CALCUL DES SCORES
 ═══════════════════════ */
-function computeWineScore(answer, guess) {
-  if (!guess || !answer) return 0;
+function computeWineScore(secret, guess) {
+  if (!secret || !guess) return 0;
   let pts = 0;
-  if (norm(answer.producer) && norm(answer.producer) === norm(guess.producer)) pts += 5;
-  if (norm(answer.appellation) && norm(answer.appellation) === norm(guess.appellation)) pts += 3;
-  if (answer.millesime && guess.millesime) {
-    const diff = Math.abs(answer.millesime - parseInt(guess.millesime));
-    if (diff === 0) pts += 2; else if (diff === 1) pts += 1;
+  if (norm(secret.producer)    && fuzzyMatch(secret.producer,    guess.producer))    pts += 10;
+  if (norm(secret.region)      && fuzzyMatch(secret.region,      guess.region))      pts += 3;
+  if (norm(secret.appellation) && fuzzyMatch(secret.appellation, guess.appellation)) pts += 5;
+  if (secret.millesime && guess.millesime) {
+    const d = Math.abs(secret.millesime - parseInt(guess.millesime));
+    if (d === 0) pts += 2; else if (d === 1) pts += 1;
   }
   return pts;
 }
@@ -1243,6 +1327,7 @@ function computeScore(session, tasterName) {
 ═══════════════════════ */
 function renderRevealDetail(answer, guess) {
   const pOk = norm(answer.producer) && norm(answer.producer) === norm(guess?.producer);
+  const rOk = norm(answer.region) && norm(answer.region) === norm(guess?.region);
   const aOk = norm(answer.appellation) && norm(answer.appellation) === norm(guess?.appellation);
   let mPts = 0, mClass = '';
   if (answer.millesime && guess?.millesime) {
@@ -1252,11 +1337,14 @@ function renderRevealDetail(answer, guess) {
   return `
     <div class="reveal-row ${pOk?'correct':''}">
       <div><span class="field-label">Producteur</span><br><span class="field-val">${answer.producer||'—'}</span></div>
-      <span class="pts-got">${pOk?'+5 pts':'0'}</span>
+      <span class="pts-got">${pOk?'+10 pts':'0'}</span>
+    <div class="reveal-row ${pOk?'correct':''}">
+      <div><span class="field-label">Région</span><br><span class="field-val">${answer.region||'—'}</span></div>
+      <span class="pts-got">${pOk?'+3 pts':'0'}</span>
     </div>
     <div class="reveal-row ${aOk?'correct':''}">
       <div><span class="field-label">Appellation</span><br><span class="field-val">${answer.appellation||'—'}</span></div>
-      <span class="pts-got">${aOk?'+3 pts':'0'}</span>
+      <span class="pts-got">${aOk?'+5 pts':'0'}</span>
     </div>
     <div class="reveal-row ${mClass}">
       <div><span class="field-label">Millésime</span><br><span class="field-val">${answer.millesime||'—'}</span></div>
@@ -1304,15 +1392,16 @@ function renderScores() {
     detailSection.innerHTML = revealedWines.map(w => `
       <div class="card card-dark" style="margin-bottom:12px;">
         <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--or);margin-bottom:4px;">${w.label}</div>
-        <div class="text-muted" style="font-size:12px;margin-bottom:12px;">${w.answer.producer||'?'} · ${w.answer.appellation||'?'} · ${w.answer.millesime||'?'}</div>
+        <div class="text-muted" style="font-size:12px;margin-bottom:12px;">${w.answer.producer||'?'} · ${w.answer.region||'?'} · ${w.answer.appellation||'?'} · ${w.answer.millesime||'?'}</div>
         <div style="overflow-x:auto;">
           <table class="score-table" style="min-width:320px;">
-            <thead><tr><th>Dégustateur</th><th>Producteur</th><th>Appellation</th><th>Millésime</th><th style="text-align:right;">Pts</th></tr></thead>
+            <thead><tr><th>Dégustateur</th><th>Producteur</th><th>Region</th><th>Appellation</th><th>Millésime</th><th style="text-align:right;">Pts</th></tr></thead>
             <tbody>${tasterNames.map(n => {
               const ans = (session.tasters[n].answers||{})[w.id]||{};
               return `<tr>
                 <td style="font-size:13px;font-weight:${n===name?600:400};">${n}</td>
                 <td style="font-size:12px;">${ans.producer||'—'}</td>
+                <td style="font-size:12px;">${ans.region||'—'}</td>
                 <td style="font-size:12px;">${ans.appellation||'—'}</td>
                 <td style="font-size:12px;">${ans.millesime||'—'}</td>
                 <td style="text-align:right;"><span class="pts-badge">${computeWineScore(w.answer,ans)}</span></td>
@@ -1378,7 +1467,7 @@ function renderRevealScreen() {
   const tasterNames = Object.keys(session.tasters);
   document.getElementById('reveal-tasters-status').innerHTML = tasterNames.map(n => {
     const ans = (session.tasters[n].answers||{})[wine.id] || {};
-    const has = ans.producer || ans.appellation || ans.millesime;
+    const has = ans.producer || ans.region || ans.appellation || ans.millesime;
     return `<div class="flex-between" style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
       <span style="font-size:14px;">${n}</span>
       <span class="pill ${has?'pill-ok':'pill-warn'}">${has?'✓ Saisi':'⏳ En attente'}</span>
@@ -1418,6 +1507,7 @@ async function doReveal() {
 
 function renderRevealResult(session, wine) {
   document.getElementById('reveal-answer-producer').textContent = wine.answer.producer || '—';
+  document.getElementById('reveal-answer-region').textContent = wine.answer.region || '—';
   document.getElementById('reveal-answer-appellation').textContent = wine.answer.appellation || '—';
   document.getElementById('reveal-answer-millesime').textContent = wine.answer.millesime || '—';
 
@@ -1428,6 +1518,7 @@ function renderRevealResult(session, wine) {
 
   document.getElementById('reveal-scores-list').innerHTML = wineScores.map(t => {
     const pOk = norm(wine.answer.producer) && norm(wine.answer.producer) === norm(t.ans.producer);
+    const rOk = norm(wine.answer.reg) && norm(wine.answer.region) === norm(t.ans.region);
     const aOk = norm(wine.answer.appellation) && norm(wine.answer.appellation) === norm(t.ans.appellation);
     let mPts = 0;
     if (wine.answer.millesime && t.ans.millesime) {
@@ -1440,8 +1531,9 @@ function renderRevealResult(session, wine) {
         <span class="pts-badge">${t.pts>0?'+'+t.pts:'0'} pt${t.pts>1?'s':''}</span>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <span class="pill ${pOk?'pill-ok':'pill-no'}" style="font-size:11px;">${t.ans.producer||'—'}${pOk?' +5':''}</span>
-        <span class="pill ${aOk?'pill-ok':'pill-no'}" style="font-size:11px;">${t.ans.appellation||'—'}${aOk?' +3':''}</span>
+        <span class="pill ${pOk?'pill-ok':'pill-no'}" style="font-size:11px;">${t.ans.producer||'—'}${pOk?' +10':''}</span>
+        <span class="pill ${rOk?'pill-ok':'pill-no'}" style="font-size:11px;">${t.ans.region||'—'}${rOk?' +3':''}</span>
+        <span class="pill ${aOk?'pill-ok':'pill-no'}" style="font-size:11px;">${t.ans.appellation||'—'}${aOk?' +5':''}</span>
         <span class="pill ${mPts===2?'pill-ok':mPts===1?'pill-warn':'pill-no'}" style="font-size:11px;">${t.ans.millesime||'—'}${mPts>0?' +'+mPts:''}</span>
       </div>
     </div>`;
@@ -1630,7 +1722,7 @@ async function showHistoryDetail(code) {
         </div>
         ${w.revealed?`
           <div style="font-size:13px;color:var(--parchemin);margin-bottom:10px;">
-            <span style="color:var(--or);">${w.answer.producer||'?'}</span> · ${w.answer.appellation||'?'} · ${w.answer.millesime||'?'}
+            <span style="color:var(--or);">${w.answer.producer||'?'}</span> · ${w.answer.region||'?'} · ${w.answer.appellation||'?'} · ${w.answer.millesime||'?'}
           </div>
           <table class="score-table">
             <thead><tr><th>Joueur</th><th>Réponses</th><th style="text-align:right;">Pts</th></tr></thead>
@@ -1638,7 +1730,7 @@ async function showHistoryDetail(code) {
               const ans=(session.tasters[n].answers||{})[w.id]||{};
               return `<tr>
                 <td style="font-size:13px;">${n}</td>
-                <td style="font-size:12px;color:var(--gris);">${ans.producer||'—'} / ${ans.appellation||'—'} / ${ans.millesime||'—'}</td>
+                <td style="font-size:12px;color:var(--gris);">${ans.producer||'—'} / ${ans.region||'—'} / ${ans.appellation||'—'} / ${ans.millesime||'—'}</td>
                 <td style="text-align:right;"><span class="pts-badge">${computeWineScore(w.answer,ans)}</span></td>
               </tr>`;
             }).join('')}</tbody>
@@ -1730,16 +1822,201 @@ async function endSession() {
    AUTOCOMPLETE
 ═══════════════════════ */
 const APPELLATIONS = [
-  'Bordeaux','Médoc','Pomerol','Saint-Émilion','Pauillac','Saint-Julien','Margaux','Saint-Estèphe',
-  'Pessac-Léognan','Sauternes','Bourgogne','Gevrey-Chambertin','Nuits-Saint-Georges','Pommard','Volnay',
-  'Meursault','Puligny-Montrachet','Chassagne-Montrachet','Chablis','Mâcon','Pouilly-Fuissé',
-  'Côte Rôtie','Condrieu','Hermitage','Crozes-Hermitage','Saint-Joseph','Châteauneuf-du-Pape',
-  'Gigondas','Vacqueyras','Ventoux','Luberon','Bandol','Cassis','Languedoc','Corbières',
-  'Minervois','Fitou','Roussillon','Alsace','Alsace Grand Cru','Gewurztraminer',
-  'Muscadet','Vouvray','Chinon','Bourgueil','Sancerre','Pouilly-Fumé','Menetou-Salon',
-  'Champagne',"Crémant d'Alsace",'Crémant de Bourgogne','Côtes du Rhône',"IGP Pays d'Oc",
-  'Barolo','Barbaresco','Chianti Classico','Brunello di Montalcino','Amarone','Rioja','Ribera del Duero',
-  'Priorat','Albariño','Champagne Blanc de Blancs','Champagne Blanc de Noirs'
+  // =====================
+  // BORDEAUX
+  // =====================
+  'Bordeaux',
+  'Bordeaux Supérieur',
+  'Entre-Deux-Mers',
+  'Graves',
+  'Pessac-Léognan',
+  'Médoc',
+  'Haut-Médoc',
+  'Margaux',
+  'Pauillac',
+  'Saint-Julien',
+  'Saint-Estèphe',
+  'Pomerol',
+  'Lalande-de-Pomerol',
+  'Saint-Émilion',
+  'Saint-Émilion Grand Cru',
+  'Sauternes',
+  'Barsac',
+
+  // =====================
+  // LOIRE
+  // =====================
+  'Sancerre',
+  'Sancerre Les Monts Damnés',
+  'Sancerre Clos la Neore',
+  'Pouilly-Fumé',
+  'Chinon',
+  'Bourgueil',
+  'Saumur',
+  'Saumur-Champigny',
+  'Vouvray',
+  'Montlouis-sur-Loire',
+
+  // =====================
+  // RHÔNE
+  // =====================
+  'Côtes du Rhône',
+  'Côtes du Rhône Villages',
+  'Châteauneuf-du-Pape',
+  'Côte-Rôtie',
+  'Côte-Rôtie La Landonne',
+  'Côte-Rôtie La Mouline',
+  'Côte-Rôtie La Turque',
+  'Hermitage',
+  'Crozes-Hermitage',
+  'Cornas',
+  'Condrieu',
+
+  // =====================
+  // ALSACE
+  // =====================
+  'Alsace',
+  'Alsace Grand Cru',
+  'Riesling Alsace Grand Cru Schlossberg',
+  'Riesling Alsace Grand Cru Rangen',
+  'Gewurztraminer Alsace Grand Cru Hengst',
+  'Crémant d’Alsace',
+
+  // =====================
+  // CHAMPAGNE
+  // =====================
+  'Champagne',
+  'Champagne Grand Cru',
+  'Champagne Premier Cru',
+  'Coteaux Champenois',
+  'Rosé des Riceys',
+
+  // =====================
+  // PROVENCE
+  // =====================
+  'Côtes de Provence',
+  'Coteaux d’Aix-en-Provence',
+  'Bandol',
+  'Palette',
+  'Bellet',
+
+  // =====================
+  // LANGUEDOC
+  // =====================
+  'Pic Saint-Loup',
+  'Corbières',
+  'Minervois',
+  'Faugères',
+  'Terrasses du Larzac',
+  'Limoux',
+
+  // =====================
+  // SUD-OUEST
+  // =====================
+  'Cahors',
+  'Madiran',
+  'Jurançon',
+  'Gaillac',
+  'Irouléguy',
+  'Monbazillac',
+
+  // =====================
+  // CORSE
+  // =====================
+  'Patrimonio',
+  'Ajaccio',
+  'Vin de Corse',
+
+  // =========================================================
+  // BOURGOGNE — VERSION DENSE CLIMATS (PARTIE IMPORTANTE)
+  // =========================================================
+
+  // ---------------------
+  // VILLAGES
+  // ---------------------
+  'Bourgogne',
+  'Chablis',
+  'Petit Chablis',
+  'Chablis Premier Cru',
+  'Chablis Grand Cru',
+  'Mercurey',
+  'Meursault',
+  'Puligny-Montrachet',
+  'Chassagne-Montrachet',
+  'Gevrey-Chambertin',
+  'Nuits-Saint-Georges',
+  'Vosne-Romanée',
+  'Pommard',
+  'Volnay',
+
+  // ---------------------
+  // MERCUREY (CÔTE CHALONNAISE)
+  // ---------------------
+  'Mercurey 1er cru Les Naugues',
+  'Mercurey 1er cru Clos du Roi',
+  'Mercurey 1er cru Les Cinq',
+  'Mercurey 1er cru Les Sazenay',
+  'Mercurey 1er cru Les Velley',
+  'Mercurey 1er cru Les Combins',
+  'Mercurey 1er cru Clos des Myglands',
+  'Mercurey 1er cru En Sazenay',
+
+  // ---------------------
+  // MEURSAULT (CÔTE DE BEAUNE)
+  // ---------------------
+  'Meursault 1er cru Les Charmes',
+  'Meursault 1er cru Les Perrières',
+  'Meursault 1er cru Genevrières',
+  'Meursault 1er cru Les Poruzots',
+  'Meursault 1er cru Blagny',
+  'Meursault 1er cru Les Bouchères',
+  'Meursault 1er cru Les Caillerets',
+
+  // ---------------------
+  // PULIGNY-MONTRACHET
+  // ---------------------
+  'Puligny-Montrachet 1er cru Les Pucelles',
+  'Puligny-Montrachet 1er cru Les Folatières',
+  'Puligny-Montrachet 1er cru Champ Gain',
+  'Puligny-Montrachet 1er cru Les Combettes',
+  'Puligny-Montrachet 1er cru Les Referts',
+
+  // ---------------------
+  // CHASSAGNE-MONTRACHET
+  // ---------------------
+  'Chassagne-Montrachet 1er cru Morgeot',
+  'Chassagne-Montrachet 1er cru Les Vergers',
+  'Chassagne-Montrachet 1er cru La Maltroie',
+  'Chassagne-Montrachet 1er cru Les Chenevottes',
+
+  // ---------------------
+  // GEVREY-CHAMBERTIN
+  // ---------------------
+  'Gevrey-Chambertin 1er cru Clos Saint-Jacques',
+  'Gevrey-Chambertin 1er cru Les Cazetiers',
+  'Gevrey-Chambertin 1er cru Lavaux Saint-Jacques',
+  'Gevrey-Chambertin 1er cru Estournelles Saint-Jacques',
+
+  // ---------------------
+  // NUITS-SAINT-GEORGES
+  // ---------------------
+  'Nuits-Saint-Georges 1er cru Les Saint-Georges',
+  'Nuits-Saint-Georges 1er cru Les Vaucrains',
+  'Nuits-Saint-Georges 1er cru Les Cailles',
+  'Nuits-Saint-Georges 1er cru Les Porrets Saint-Georges',
+
+  // ---------------------
+  // GRANDS CRUS BOURGOGNE
+  // ---------------------
+  'Chambertin Grand cru',
+  'Clos de Vougeot Grand cru',
+  'Romanée-Conti Grand cru',
+  'La Tâche Grand cru',
+  'Richebourg Grand cru',
+  'Montrachet Grand cru',
+  'Corton Grand cru',
+  'Echézeaux Grand cru',
+  'Grands-Echézeaux Grand cru'
 ];
 
 /* ═══════════════════════
