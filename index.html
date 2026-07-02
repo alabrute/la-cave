@@ -1160,7 +1160,7 @@ function renderSessionScreen() {
     const div = document.createElement('div');
     div.className = 'wine-item';
 
-    const hasSomething = ans.producer || a.region || ans.appellation || ans.millesime;
+    const hasSomething = ans.producer || ans.region || ans.appellation || ans.millesime;
     const statusText = isRevealed ? '🔓 Révélé' : (hasSomething ? '✓ Saisi' : '...');
 
     let bodyContent = '';
