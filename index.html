@@ -1560,9 +1560,9 @@ function renderRevealResult(session, wine) {
     .sort((a,b) => b.pts - a.pts);
 
   document.getElementById('reveal-scores-list').innerHTML = wineScores.map(t => {
-    const pOk = norm(secret.producer) && fuzzyMatch(secret.producer, t.ans.producer);
-    const rOk = norm(secret.region)   && fuzzyMatch(secret.region,   t.ans.region);
-    const aOk = norm(wine.answer.appellation) && norm(wine.answer.appellation) === norm(t.ans.appellation);
+    const pOk = norm(wine.answer.producer) && fuzzyMatch(wine.answer.producer, t.ans.producer);
+    const rOk = norm(wine.answer.region)   && fuzzyMatch(wine.answer.region,   t.ans.region);
+    const aOk = norm(wine.answer.appellation) && fuzzyMatch(wine.answer.appellation, t.ans.appellation);
     let mPts = 0;
     if (wine.answer.millesime && t.ans.millesime) {
       const diff = Math.abs(wine.answer.millesime - parseInt(t.ans.millesime));
