@@ -929,6 +929,48 @@ function subscribeToSession(code) {
 ═══════════════════════ */
 let wineRowCount = 0;
 
+const APPELLATIONS_BY_REGION = {
+  'Alsace': ['Alsace','Alsace Grand Cru','Crémant d\'Alsace'],
+  'Beaujolais': ['Beaujolais','Beaujolais-Villages','Brouilly','Côte de Brouilly','Fleurie','Morgon','Moulin-à-Vent','Chiroubles','Juliénas','Saint-Amour','Chénas','Régnié'],
+  'Bordeaux': ['Bordeaux','Médoc','Haut-Médoc','Pauillac','Saint-Julien','Margaux','Saint-Estèphe','Saint-Émilion','Pomerol','Pessac-Léognan','Sauternes','Barsac','Fronsac','Graves'],
+  'Bourgogne': ['Bourgogne','Chablis','Chablis Premier Cru','Chablis Grand Cru','Gevrey-Chambertin','Morey-Saint-Denis','Chambolle-Musigny','Vougeot','Vosne-Romanée','Nuits-Saint-Georges','Aloxe-Corton','Beaune','Pommard','Volnay','Meursault','Puligny-Montrachet','Chassagne-Montrachet','Santenay','Mâcon','Pouilly-Fuissé','Saint-Véran','Crémant de Bourgogne'],
+  'Champagne': ['Champagne','Champagne Blanc de Blancs','Champagne Blanc de Noirs','Champagne Rosé'],
+  'Corse': ['Ajaccio','Patrimonio','Muscat du Cap Corse','Vin de Corse'],
+  'Jura': ['Arbois','Château-Chalon','L\'Étoile','Côtes du Jura','Vin Jaune','Vin de Paille','Crémant du Jura'],
+  'Languedoc-Roussillon': ['Languedoc','Corbières','Minervois','Fitou','Faugères','Saint-Chinian','Picpoul de Pinet','Roussillon','Banyuls','Maury','Rivesaltes'],
+  'Loire': ['Muscadet','Vouvray','Montlouis','Chinon','Bourgueil','Saint-Nicolas-de-Bourgueil','Saumur','Saumur-Champigny','Anjou','Côteaux du Layon','Sancerre','Pouilly-Fumé','Menetou-Salon','Quincy','Reuilly','Crémant de Loire'],
+  'Provence': ['Bandol','Cassis','Bellet','Palette','Côtes de Provence','Coteaux d\'Aix-en-Provence','Les Baux-de-Provence'],
+  'Rhône Nord': ['Côte Rôtie','Condrieu','Château-Grillet','Saint-Joseph','Crozes-Hermitage','Hermitage','Cornas','Saint-Péray'],
+  'Rhône Sud': ['Châteauneuf-du-Pape','Gigondas','Vacqueyras','Beaumes-de-Venise','Rasteau','Tavel','Lirac','Côtes du Rhône','Côtes du Rhône Villages','Ventoux','Luberon'],
+  'Savoie': ['Vin de Savoie','Roussette de Savoie','Crépy','Seyssel'],
+  'Sud-Ouest': ['Cahors','Bergerac','Pécharmant','Monbazillac','Jurançon','Madiran','Gaillac','Marcillac','Irouléguy'],
+  'Italie': ['Barolo','Barbaresco','Barolo DOCG','Chianti','Chianti Classico','Brunello di Montalcino','Vino Nobile di Montepulciano','Amarone della Valpolicella','Soave','Prosecco','Franciacorta','Primitivo','Nero d\'Avola'],
+  'Espagne': ['Rioja','Ribera del Duero','Priorat','Rías Baixas','Cava','Jerez','Penedès','Toro','Bierzo'],
+  'Portugal': ['Porto','Douro','Alentejo','Vinho Verde','Dão','Bairrada'],
+  'Allemagne': ['Mosel','Rheingau','Rheinhessen','Pfalz','Riesling Spätlese','Riesling Auslese'],
+  'Autriche': ['Grüner Veltliner','Riesling Wachau','Blaufränkisch'],
+  'Grèce': ['Santorini','Nemea','Naoussa','Moschofilero'],
+  'États-Unis': ['Napa Valley','Sonoma','Willamette Valley','Central Coast'],
+  'Chili': ['Maipo Valley','Colchagua','Casablanca Valley'],
+  'Argentine': ['Mendoza','Luján de Cuyo','Valle de Uco','Salta'],
+  'Afrique du Sud': ['Stellenbosch','Franschhoek','Swartland','Walker Bay'],
+  'Australie': ['Barossa Valley','McLaren Vale','Margaret River','Hunter Valley','Yarra Valley'],
+  'Nouvelle-Zélande': ['Marlborough','Central Otago','Hawke\'s Bay'],
+};
+
+function updateAppellationList(regionValue, appellationInputId) {
+  const appellations = APPELLATIONS_BY_REGION[regionValue] || [];
+  let datalist = document.getElementById('appellations_list_dynamic');
+  if (!datalist) {
+    datalist = document.createElement('datalist');
+    datalist.id = 'appellations_list_dynamic';
+    document.body.appendChild(datalist);
+  }
+  datalist.innerHTML = appellations.map(a => `<option value="${a}">`).join('');
+  const input = document.getElementById(appellationInputId);
+  if (input) input.setAttribute('list', appellations.length ? 'appellations_list_dynamic' : 'appellations_list');
+}
+
 function addWineRow() {
   wineRowCount++;
   const id = 'wine_'+wineRowCount;
@@ -949,7 +991,7 @@ function addWineRow() {
       </div>
       <div class="form-group" style="margin-bottom:8px;">
         <label style="font-size:11px;">Région</label>
-        <input type="text" id="${id}_region" placeholder="ex : Bourgogne" list="regions_list">
+        <input type="text" id="${id}_region" placeholder="ex : Bourgogne" list="regions_list" oninput="updateAppellationList(this.value, '${id}_appellation')">
         </div>
       <div class="form-group" style="margin-bottom:8px;">
         <label style="font-size:11px;">Appellation</label>
@@ -1188,8 +1230,9 @@ function renderSessionScreen() {
         </div>
         <div class="form-group">
             <label>Région</label>
-            <input type="text" id="inp_${wine.id}_region" value="${ans.region||''}" placeholder="Votre réponse…" list="regions_list"
-                oninput="saveAnswer('${wine.id}','region',this.value)">
+            <input type="text" id="inp_${wine.id}_region" value="${ans.region||''}"
+              placeholder="Votre réponse…" list="regions_list"
+              oninput="saveAnswer('${wine.id}','region',this.value); updateAppellationList(this.value, 'inp_${wine.id}_appellation')">
         </div>
         <div class="form-group">
           <label>Appellation</label>
@@ -1517,8 +1560,8 @@ function renderRevealResult(session, wine) {
     .sort((a,b) => b.pts - a.pts);
 
   document.getElementById('reveal-scores-list').innerHTML = wineScores.map(t => {
-    const pOk = norm(wine.answer.producer) && norm(wine.answer.producer) === norm(t.ans.producer);
-    const rOk = norm(wine.answer.reg) && norm(wine.answer.region) === norm(t.ans.region);
+    const pOk = norm(secret.producer) && fuzzyMatch(secret.producer, t.ans.producer);
+    const rOk = norm(secret.region)   && fuzzyMatch(secret.region,   t.ans.region);
     const aOk = norm(wine.answer.appellation) && norm(wine.answer.appellation) === norm(t.ans.appellation);
     let mPts = 0;
     if (wine.answer.millesime && t.ans.millesime) {
@@ -2040,6 +2083,7 @@ if (currentUser?.sessionCode) {
 }
 
 window.showScreen              = showScreen;
+window.updateAppellationList   = updateAppellationList;
 window.addWineRow              = addWineRow;
 window.createSession           = createSession;
 window.joinSession             = joinSession;
