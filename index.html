@@ -9,6 +9,8 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
       rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <style>
   :root {
     --noir: #1A0A0A;
@@ -91,6 +93,9 @@
   /* ─── SCREENS ─── */
   .screen { display: none; }
   .screen.active { display: block; }
+
+  .sortable-ghost { opacity: 0.4; background: var(--bordeaux); }
+  .drag-handle:active { cursor: grabbing; }
 
   /* ─── CARDS ─── */
   .card {
@@ -625,7 +630,7 @@
       <div style="display:flex;gap:8px;align-items:center;">
         <button class="btn btn-danger btn-sm"
         id="history-delete-btn"
-        hidden
+        style="display:none;"
         onclick="deleteSelectedSessions()">
   🗑 Supprimer
         </button>
@@ -826,6 +831,61 @@ import {
 const firebaseApp = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(firebaseApp);
 
+const WORKER_URL = 'https://votre-worker.votre-compte.workers.dev';
+
+function scanLabel(wid) {
+  document.getElementById('scan_' + wid)?.click();
+}
+
+async function processLabelScan(input, wid) {
+  const file = input.files[0];
+  if (!file) return;
+  showLoading('Analyse de l\'étiquette…');
+  try {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64 = e.target.result.split(',')[1];
+      const mediaType = file.type;
+      const response = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageData: base64, mediaType })
+      });
+      const data = await response.json();
+      const text = data.content[0].text;
+      const wine = JSON.parse(text);
+      if (wine.producer)    document.getElementById(wid + '_producer').value    = wine.producer;
+      if (wine.region)      document.getElementById(wid + '_region').value      = wine.region;
+      if (wine.appellation) document.getElementById(wid + '_appellation').value = wine.appellation;
+      if (wine.millesime)   document.getElementById(wid + '_millesime').value   = wine.millesime;
+      hideLoading();
+      showToast('Étiquette reconnue !');
+    };
+    reader.readAsDataURL(file);
+  } catch(e) {
+    hideLoading();
+    showToast('Erreur reconnaissance : ' + e.message);
+  }
+}
+
+//await sendPushToAll(session, `🔓 ${wine.label} révélé !`, 'Consultez vos points sur La Cave');
+
+async function sendPushToAll(session, title, body) {
+  // Envoyer via votre Cloudflare Worker (même worker que pour les photos,
+  // ajoutez une route /push) ou un second worker dédié
+  const subs = session.pushSubscriptions || {};
+  for (const name of Object.keys(subs)) {
+    if (name === currentUser.name) continue; // pas besoin de notifier l'organisateur
+    try {
+      await fetch(WORKER_URL + '/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: JSON.parse(subs[name]), title, body })
+      });
+    } catch(e) {}
+  }
+}
+
 /* ═══════════════════════
    ÉTAT LOCAL
 ═══════════════════════ */
@@ -846,6 +906,34 @@ function loadUser() {
   } catch(e) {}
 }
 
+async function initPushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.register('/la-cave/sw.js');
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+
+    // Stocker l'abonnement dans Firestore pour cet utilisateur
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array('VOTRE_VAPID_PUBLIC_KEY')
+    });
+
+    if (currentUser?.sessionCode) {
+      await updateDoc(sRef(currentUser.sessionCode), {
+        [`pushSubscriptions.${currentUser.name}`]: JSON.stringify(sub)
+      });
+    }
+  } catch(e) { console.warn('Push non disponible', e); }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
 /* ═══════════════════════
    UTILITAIRES
 ═══════════════════════ */
@@ -855,6 +943,11 @@ function generateCode() {
 }
 
 function norm(s) { return (s||'').trim().toLowerCase(); }
+
+async function hashPwd(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
 
 function showToast(msg, duration=2500) {
   const t = document.getElementById('toast');
@@ -905,7 +998,7 @@ function sRef(code) {
 }
 
 function xRef(code) {
-  return doc(db, "collection", code);
+  return doc(db, 'sessions', code, 'meta', 'secrets');
 }
 
 // Démarre l'écoute temps réel de la session active
@@ -982,7 +1075,11 @@ function addWineRow() {
   div.innerHTML = `
     <div class="flex-between" style="margin-bottom:10px;">
       <span class="text-or" style="font-family:'Playfair Display',serif;font-size:15px;">Vin ${wineRowCount}</span>
+      <span class="drag-handle" style="cursor:grab;color:var(--gris);margin-right:8px;">⠿</span>
       <button class="btn btn-danger btn-sm" onclick="document.getElementById('row_${id}').remove()">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="scanLabel('${id}')">📷 Scanner l'étiquette</button>
+      <input type="file" id="scan_${id}" accept="image/*" capture="environment" style="display:none"
+      onchange="processLabelScan(this, '${id}')">
     </div>
     <div class="grid-2">
       <div class="form-group" style="margin-bottom:8px;">
@@ -1004,6 +1101,16 @@ function addWineRow() {
     </div>
   `;
   list.appendChild(div);
+  if (!window._sortable) {
+  window._sortable = new Sortable(
+    document.getElementById('wine-rows-list'),
+    {
+      animation: 150,
+      handle: '.drag-handle',
+      ghostClass: 'sortable-ghost'
+    }
+  );
+}
 }
 
 async function createSession() {
@@ -1013,16 +1120,17 @@ async function createSession() {
 
   const wines = [];
   let idx = 1;
-  document.querySelectorAll('[id^="row_wine_"]').forEach(row => {
-    const wid = row.id.replace('row_','');
-    const p = document.getElementById(wid+'_producer').value.trim();
-    const r = document.getElementById(wid+'_region')?.value.trim() || '';
-    const a = document.getElementById(wid+'_appellation').value.trim();
-    const m = parseInt(document.getElementById(wid+'_millesime').value) || 0;
-    if (p || a || m) {
-      wines.push({ id: wid, label: 'Vin '+idx++, answer: {producer:p, region:r, appellation:a, millesime:m}, revealed: false });
-    }
-  });
+const rows = [...document.getElementById('wine-rows-list').children];
+rows.forEach(row => {
+  const wid = row.id.replace('row_', '');
+  const p = document.getElementById(wid+'_producer')?.value.trim() || '';
+  const r = document.getElementById(wid+'_region')?.value.trim() || '';
+  const a = document.getElementById(wid+'_appellation')?.value.trim() || '';
+  const m = parseInt(document.getElementById(wid+'_millesime')?.value) || 0;
+  if (p || r || a || m) {
+    wines.push({ id: wid, label: 'Vin '+(idx++), answer: {producer:p, region:r, appellation:a, millesime:m}, revealed: false });
+  }
+});
 
   if (wines.length === 0) { showToast('Ajoutez au moins un vin'); return; }
 
@@ -1369,8 +1477,8 @@ function computeScore(session, tasterName) {
    REVEAL DETAIL (inline)
 ═══════════════════════ */
 function renderRevealDetail(answer, guess) {
-  const pOk = norm(answer.producer) && norm(answer.producer) === norm(guess?.producer);
-  const rOk = norm(answer.region) && norm(answer.region) === norm(guess?.region);
+  const pOk = norm(answer.producer) && fuzzyMatch(answer.producer, guess?.producer);
+  const rOk = norm(answer.region)   && fuzzyMatch(answer.region,   guess?.region);
   const aOk = norm(answer.appellation) && norm(answer.appellation) === norm(guess?.appellation);
   let mPts = 0, mClass = '';
   if (answer.millesime && guess?.millesime) {
@@ -1381,9 +1489,10 @@ function renderRevealDetail(answer, guess) {
     <div class="reveal-row ${pOk?'correct':''}">
       <div><span class="field-label">Producteur</span><br><span class="field-val">${answer.producer||'—'}</span></div>
       <span class="pts-got">${pOk?'+10 pts':'0'}</span>
-    <div class="reveal-row ${pOk?'correct':''}">
+    </div>
+    <div class="reveal-row ${rOk?'correct':''}">
       <div><span class="field-label">Région</span><br><span class="field-val">${answer.region||'—'}</span></div>
-      <span class="pts-got">${pOk?'+3 pts':'0'}</span>
+      <span class="pts-got">${rOk?'+3 pts':'0'}</span>
     </div>
     <div class="reveal-row ${aOk?'correct':''}">
       <div><span class="field-label">Appellation</span><br><span class="field-val">${answer.appellation||'—'}</span></div>
@@ -2104,6 +2213,8 @@ window.rejoinFromHistory       = rejoinFromHistory;
 window.showHistoryDetail       = showHistoryDetail;
 window.toggleHistorySelection  = toggleHistorySelection;
 window.deleteSelectedSessions  = deleteSelectedSessions;
+window.scanLabel               = scanLabel;
+window.processLabelScan        = processLabelScan;
 
 </script>
 
