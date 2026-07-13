@@ -831,7 +831,7 @@ import {
 const firebaseApp = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(firebaseApp);
 
-const WORKER_URL = 'https://votre-worker.votre-compte.workers.dev';
+const WORKER_URL = 'https://icy-fire-17bf.augustinlabouret.workers.dev/';
 
 function scanLabel(wid) {
   document.getElementById('scan_' + wid)?.click();
@@ -916,7 +916,7 @@ async function initPushNotifications() {
     // Stocker l'abonnement dans Firestore pour cet utilisateur
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array('VOTRE_VAPID_PUBLIC_KEY')
+      applicationServerKey: urlBase64ToUint8Array('BJl7hP3X0jsR1-khsXT_W1GloLm8rZWaj4hBHhIukA8p1kwYUHKYOnjZDYoBq9JWm7giB0KeX7LZMXnP5t2QrCA')
     });
 
     if (currentUser?.sessionCode) {
