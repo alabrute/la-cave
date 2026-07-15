@@ -1142,8 +1142,6 @@ function updateAppellationList(regionValue, appellationInputId) {
     document.body.appendChild(datalist);
   }
   datalist.innerHTML = appellations.map(a => `<option value="${a}">`).join('');
-  const input = document.getElementById(appellationInputId);
-  if (input) input.setAttribute('list', appellations.length ? 'appellations_list_dynamic' : 'appellations_list');
 }
 
 function addWineRow() {
@@ -1174,7 +1172,7 @@ function addWineRow() {
         </div>
       <div class="form-group" style="margin-bottom:8px;">
         <label style="font-size:11px;">Appellation</label>
-        <input type="text" id="${id}_appellation" placeholder="ex: Gevrey-Chambertin" list="appellations_list">
+        <input type="text" id="${id}_appellation" placeholder="ex: Gevrey-Chambertin" list="appellations_list_dynamic">
       </div>
     </div>
     <div class="form-group" style="margin-bottom:0;">
@@ -1427,7 +1425,7 @@ function renderSessionScreen() {
         <div class="form-group">
           <label>Appellation</label>
           <input type="text" id="inp_${wine.id}_appellation" value="${ans.appellation||''}" placeholder="Votre réponse…"
-            list="appellations_list" oninput="saveAnswer('${wine.id}','appellation',this.value)">
+            list="appellations_list_dynamic" oninput="saveAnswer('${wine.id}','appellation',this.value)">
         </div>
         <div class="form-group" style="margin-bottom:0;">
           <label>Millésime</label>
@@ -1528,8 +1526,23 @@ function fuzzyMatch(ref, guess) {
   const b = cleanName(guess);
   if (!a || !b) return false;
   if (a === b) return true;
-  const threshold = Math.min(3, Math.max(1, Math.floor(Math.max(a.length, b.length) * 0.2)));
-  return levenshtein(a, b) <= threshold;
+
+  const aWords = a.split(' ');
+  const bWords = b.split(' ');
+
+  // Si le guess contient plusieurs mots : comparaison globale avec seuil
+  if (bWords.length > 1) {
+    const threshold = Math.min(3, Math.max(1, Math.floor(Math.max(a.length, b.length) * 0.2)));
+    return levenshtein(a, b) <= threshold;
+  }
+
+  // Si le guess est un seul mot : vérifier s'il matche un des mots de la référence
+  // ex: "chateauneuf" doit matcher "chateauneuf" dans "chateauneuf pape"
+  return aWords.some(word => {
+    if (!word) return false;
+    const threshold = Math.min(3, Math.max(1, Math.floor(Math.max(word.length, b.length) * 0.2)));
+    return levenshtein(word, b) <= threshold;
+  });
 }
 
 /* ═══════════════════════
@@ -2272,6 +2285,10 @@ if (currentUser?.sessionCode) {
     }
   }).catch(() => { hideLoading(); });
 }
+
+const dl = document.createElement('datalist');
+dl.id = 'appellations_list_dynamic';
+document.body.appendChild(dl);
 
 window.showScreen              = showScreen;
 window.updateAppellationList   = updateAppellationList;
