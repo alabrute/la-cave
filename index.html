@@ -1559,10 +1559,30 @@ function fuzzyMatch(ref, guess) {
   const bWords = b.split(' ');
 
   // Si le guess contient plusieurs mots : comparaison globale avec seuil
-  if (bWords.length > 1) {
-    const threshold = Math.min(3, Math.max(1, Math.floor(Math.max(a.length, b.length) * 0.2)));
-    return levenshtein(a, b) <= threshold;
-  }
+ if (bWords.length > 1) {
+
+  // égalité
+  if (a === b) return true;
+
+  // un contient l'autre
+  if (a.includes(b) || b.includes(a)) return true;
+
+  // chaque mot du guess doit matcher un mot de la référence
+  const ok = bWords.every(gWord =>
+    aWords.some(rWord => {
+      const threshold = Math.min(
+        2,
+        Math.max(1, Math.floor(Math.max(rWord.length, gWord.length) * 0.2))
+      );
+      return levenshtein(rWord, gWord) <= threshold;
+    })
+  );
+
+  if (ok) return true;
+
+  const threshold = Math.min(3, Math.max(1, Math.floor(Math.max(a.length, b.length) * 0.2)));
+  return levenshtein(a, b) <= threshold;
+}
 
   // Si le guess est un seul mot : vérifier s'il matche un des mots de la référence
   // ex: "chateauneuf" doit matcher "chateauneuf" dans "chateauneuf pape"
@@ -1602,7 +1622,7 @@ function computeScore(session, tasterName) {
 function renderRevealDetail(answer, guess) {
   const pOk = norm(answer.producer) && fuzzyMatch(answer.producer, guess?.producer);
   const rOk = norm(answer.region)   && fuzzyMatch(answer.region,   guess?.region);
-  const aOk = norm(answer.appellation) && fuzzyMatch(answer.appellation, guess?.appellation);
+  const aOk = norm(answer.appellation) && fuzzyMatch(answer.appellation,guess?.appellation);
   let mPts = 0, mClass = '';
   if (answer.millesime && guess?.millesime) {
     const diff = Math.abs(answer.millesime - parseInt(guess.millesime));
