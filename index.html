@@ -1602,7 +1602,7 @@ function computeScore(session, tasterName) {
 function renderRevealDetail(answer, guess) {
   const pOk = norm(answer.producer) && fuzzyMatch(answer.producer, guess?.producer);
   const rOk = norm(answer.region)   && fuzzyMatch(answer.region,   guess?.region);
-  const aOk = norm(answer.appellation) && norm(answer.appellation) === norm(guess?.appellation);
+  const aOk = norm(answer.appellation) && fuzzyMatch(answer.appellation, guess?.appellation);
   let mPts = 0, mClass = '';
   if (answer.millesime && guess?.millesime) {
     const diff = Math.abs(answer.millesime - parseInt(guess.millesime));
