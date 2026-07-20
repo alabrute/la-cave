@@ -565,6 +565,12 @@ input::placeholder {
       </div>
     </div>
 
+    <div class="form-group">
+  <label>Mot de passe organisateur</label>
+  <input type="password" id="create-host-password" placeholder="Choisissez un mot de passe secret">
+  <p class="hint">Seul l'organisateur connaît ce mot de passe. Les dégustateurs n'y ont pas accès.</p>
+    </div>
+
     <div class="card">
       <div class="flex-between" style="margin-bottom:16px;">
         <h3 style="margin:0;">Vins à déguster</h3>
@@ -854,6 +860,16 @@ input::placeholder {
         <div id="reveal-answer-region" style="font-size:16px;color:var(--parchemin);margin-bottom:4px;"></div>
         <div id="reveal-answer-appellation" style="font-size:16px;color:var(--parchemin);margin-bottom:4px;"></div>
         <div id="reveal-answer-millesime" style="font-size:28px;font-family:&#39;Playfair Display&#39;,serif;color:var(--or-light);"></div>
+        <div style="margin-top:14px;">
+          <a id="reveal-google-link"
+              href="#"
+              target="_blank"
+              rel="noopener"
+              class="btn btn-ghost btn-sm"
+              style="display:none;gap:6px;text-decoration:none;">
+              🔍 Rechercher ce vin sur Google
+  </a>
+</div>
       </div>
 
       <!-- Scores de chacun pour ce vin -->
@@ -1198,6 +1214,10 @@ async function createSession() {
   const host = document.getElementById('create-host-name').value.trim();
   if (!name || !host) { showToast('Veuillez remplir tous les champs'); return; }
 
+  const password = document.getElementById('create-host-password').value.trim();
+  if (!password) { showToast('Choisissez un mot de passe organisateur'); return; }
+  const pwHash = await hashPwd(password);
+
   const wines = [];
   let idx = 1;
 const rows = [...document.getElementById('wine-rows-list').children];
@@ -1219,6 +1239,7 @@ rows.forEach(row => {
     const code = generateCode();
     const sessionData = {
       code, name, host,
+      hostHash: pwHash,
       createdAt: Date.now(),
       status: 'active',
       wines,
@@ -1227,8 +1248,7 @@ rows.forEach(row => {
       }
     };
     await setDoc(sessionRef(code), sessionData);
-
-    currentUser = { name: host, role: 'host', sessionCode: code };
+    currentUser = { name: host, role: 'host', sessionCode: code, pwHash };
     saveUser();
     currentSession = sessionData;
     subscribeToSession(code);
@@ -1296,11 +1316,19 @@ async function quickJoinSession(code) {
     if (session.status === 'closed') { hideLoading(); showToast('Session clôturée'); return; }
 
     let role = 'taster', pwHash = null;
-    if (password) {
-      pwHash = await hashPwd(password);
-      if (pwHash !== session.hostHash) { hideLoading(); showToast('Mot de passe incorrect'); return; }
-      role = 'host';
-    }
+    const password = document.getElementById('join-password')?.value.trim() || '';
+
+if (password) {
+  pwHash = await hashPwd(password);
+  if (pwHash !== session.hostHash) {
+    hideLoading();
+    showToast('Mot de passe incorrect');
+    return;
+  }
+  role = 'host';
+}
+
+    currentUser = { name, role, sessionCode: code, pwHash };
 
     if (!session.tasters[name]) {
       await updateDoc(sRef(code), { [`tasters.${name}`]: { answers: {} } });
@@ -1660,7 +1688,7 @@ function renderScores() {
   }
 
   // Contrôles animateur
-  const isHost = (role === 'host' || session.host === name);
+  const isHost = currentUser.role === 'host';
   const hostControls = document.getElementById('host-controls');
   const navReveal = document.getElementById('nav-reveal');
   if (isHost) {
@@ -1688,7 +1716,10 @@ function renderScores() {
 let revealCurrentWineIdx = null;
 
 function renderRevealScreen() {
-  if (!currentUser || !currentSession) { showScreen('scores'); return; }
+  if (!currentUser || !currentSession || currentUser.role !== 'host') {
+  showScreen('scores');
+  return;
+  }
   const session = currentSession;
   const unrevealedWines = session.wines.filter(w => !w.revealed);
 
@@ -1757,6 +1788,22 @@ function renderRevealResult(session, wine) {
   document.getElementById('reveal-answer-region').textContent = wine.answer.region || '—';
   document.getElementById('reveal-answer-appellation').textContent = wine.answer.appellation || '—';
   document.getElementById('reveal-answer-millesime').textContent = wine.answer.millesime || '—';
+
+  // Construire le lien Google
+const searchQuery = [
+  wine.answer.producer,
+  wine.answer.appellation,
+  wine.answer.millesime
+].filter(Boolean).join(' ');
+
+const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+
+const searchLinkEl = document.getElementById('reveal-google-link');
+if (searchLinkEl) {
+  searchLinkEl.href = searchLinkEl.textContent = '';
+  searchLinkEl.href = googleUrl;
+  searchLinkEl.style.display = 'inline-flex';
+}
 
   const tasterNames = Object.keys(session.tasters);
   const wineScores = tasterNames
