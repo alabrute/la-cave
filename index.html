@@ -868,8 +868,8 @@ input::placeholder {
               class="btn btn-ghost btn-sm"
               style="display:none;gap:6px;text-decoration:none;">
               🔍 Rechercher ce vin sur Google
-  </a>
-</div>
+            </a>
+        </div>
       </div>
 
       <!-- Scores de chacun pour ce vin -->
@@ -1820,7 +1820,6 @@ const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQu
 
 const searchLinkEl = document.getElementById('reveal-google-link');
 if (searchLinkEl) {
-  searchLinkEl.href = searchLinkEl.textContent = '';
   searchLinkEl.href = googleUrl;
   searchLinkEl.style.display = 'inline-flex';
 }
