@@ -105,6 +105,9 @@
   .screen.active { display: block; }
 
   .sortable-ghost { opacity: 0.4; background: var(--bordeaux); }
+  .step-locked { opacity: 0.45; pointer-events: none; }
+  .wine-pairing { display:none; margin-top:10px; font-size:12px; color:var(--or); background:rgba(201,169,110,0.1); border:1px solid rgba(201,169,110,0.3); border-radius:8px; padding:6px 10px; line-height:1.4; }
+  .wine-row-status { font-size:11px; margin-left:6px; }
   .drag-handle:active { cursor: grabbing; }
 
   /* ─── CARDS ─── */
@@ -160,7 +163,7 @@ h3 {
     letter-spacing: 0.08em;
     margin-bottom: 6px;
   }
-  input[type=text], input[type=number], input[type=password] {
+  input[type=text], input[type=number], input[type=password], select, textarea {
   width: 100%;
   background: rgba(0,0,0,0.4);
   border: 1px solid rgba(255,255,255,0.08);
@@ -581,8 +584,15 @@ input::placeholder {
     </div>
 
     <div class="card">
-      <h3>Menu & ordre de dégustation</h3>
-      <p class="text-muted" style="font-size:12px;margin-bottom:10px;">Vérifiez que chaque vin est complet (région, appellation, millésime), puis décrivez le menu.</p>
+      <h3>① Vérification des vins</h3>
+      <p class="text-muted" style="font-size:12px;margin-bottom:10px;">Une fois toutes les étiquettes scannées, relisez chaque vin (producteur, région, appellation, millésime, couleur) et complétez si besoin.</p>
+      <div id="wines-validation" style="display:none;font-size:13px;margin-bottom:12px;line-height:1.6;"></div>
+      <button class="btn btn-ghost btn-full" onclick="confirmWines()">✓ Valider les vins</button>
+    </div>
+
+    <div class="card step-locked" id="menu-step">
+      <h3>② Menu & ordre de dégustation</h3>
+      <p class="text-muted" style="font-size:12px;margin-bottom:10px;">Décrivez le menu : l'IA réordonne les vins dans la liste ci-dessus (vous pouvez ensuite les glisser avec ⠿).</p>
       <div class="form-group">
         <label>Menu prévu</label>
         <textarea id="menu-text" rows="4" placeholder="ex : Entrée : saumon gravlax. Plat : magret de canard aux cerises. Dessert : tarte au citron."></textarea>
@@ -950,31 +960,40 @@ async function processLabelScan(input, wid) {
   const file = input.files[0];
   if (!file) return;
   showLoading('Analyse de l\'étiquette…');
-  try {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
+  const reader = new FileReader();
+  reader.onerror = () => { hideLoading(); showToast('Impossible de lire la photo'); };
+  reader.onload = async (e) => {
+    try {
       const base64 = e.target.result.split(',')[1];
-      const mediaType = file.type;
       const response = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageData: base64, mediaType })
+        body: JSON.stringify({ imageData: base64, mediaType: file.type })
       });
+      if (!response.ok) throw new Error('Worker ' + response.status);
       const data = await response.json();
-      const text = data.content[0].text;
-      const wine = JSON.parse(text);
-      if (wine.producer)    document.getElementById(wid + '_producer').value    = wine.producer;
-      if (wine.region)      document.getElementById(wid + '_region').value      = wine.region;
-      if (wine.appellation) document.getElementById(wid + '_appellation').value = wine.appellation;
-      if (wine.millesime)   document.getElementById(wid + '_millesime').value   = wine.millesime;
+      const textBlock = (data.content || []).find(b => b.type === 'text');
+      const wine = JSON.parse((textBlock?.text || '').replace(/```json|```/g, '').trim());
+      ['producer','region','appellation','millesime'].forEach(f => {
+        const el = document.getElementById(wid + '_' + f);
+        if (wine[f] && el) { el.value = wine[f]; el.style.borderColor = ''; }
+      });
+      const colorEl = document.getElementById(wid + '_color');
+      if (wine.color && colorEl) {
+        const match = WINE_COLORS.find(c => norm(c).startsWith(norm(wine.color).slice(0, 4)));
+        if (match) colorEl.value = match;
+      }
+      markWinesDirty();
+      showToast('Étiquette reconnue ! Vérifiez les champs.');
+    } catch (err) {
+      console.error(err);
+      showToast('Erreur reconnaissance : ' + err.message);
+    } finally {
       hideLoading();
-      showToast('Étiquette reconnue !');
-    };
-    reader.readAsDataURL(file);
-  } catch(e) {
-    hideLoading();
-    showToast('Erreur reconnaissance : ' + e.message);
-  }
+      input.value = '';
+    }
+  };
+  reader.readAsDataURL(file);
 }
 
 //await sendPushToAll(session, `🔓 ${wine.label} révélé !`, 'Consultez vos points sur La Cave');
@@ -1171,6 +1190,20 @@ function updateAppellationList(regionValue, appellationInputId) {
   datalist.innerHTML = appellations.map(a => `<option value="${a}">`).join('');
 }
 
+const WINE_COLORS = ['Blanc', 'Rouge', 'Rosé', 'Effervescent', 'Liquoreux / Moelleux'];
+const REQUIRED_FIELDS = { producer: 'producteur', region: 'région', appellation: 'appellation', millesime: 'millésime' };
+let winesValidated = false;
+
+function wineRows() {
+  return [...document.getElementById('wine-rows-list').children];
+}
+
+function readWineRow(row) {
+  const wid = row.id.replace('row_', '');
+  const v = f => document.getElementById(wid + '_' + f)?.value.trim() || '';
+  return { id: wid, producer: v('producer'), region: v('region'), appellation: v('appellation'), millesime: v('millesime'), color: v('color') };
+}
+
 function addWineRow() {
   wineRowCount++;
   const id = 'wine_'+wineRowCount;
@@ -1180,11 +1213,14 @@ function addWineRow() {
   div.id = 'row_'+id;
   div.style.cssText = 'padding:14px;margin-bottom:10px;';
   div.innerHTML = `
-    <div class="flex-between" style="margin-bottom:10px;">
-      <span class="text-or wine-row-title" style="font-family:'Playfair Display',serif;font-size:15px;">Vin ${wineRowCount}</span>
-      <span class="drag-handle" style="cursor:grab;color:var(--gris);margin-right:8px;">⠿</span>
-      <button class="btn btn-danger btn-sm" onclick="document.getElementById('row_${id}').remove()">✕</button>
-      <button class="btn btn-ghost btn-sm" onclick="scanLabel('${id}')">📷 Scanner l'étiquette</button>
+    <div class="flex-between" style="margin-bottom:10px;gap:6px;">
+      <span class="drag-handle" style="cursor:grab;color:var(--gris);font-size:18px;">⠿</span>
+      <span style="flex:1;">
+        <span class="text-or wine-row-title" style="font-family:'Playfair Display',serif;font-size:15px;">Vin ${list.children.length + 1}</span>
+        <span class="wine-row-status" id="${id}_status"></span>
+      </span>
+      <button class="btn btn-ghost btn-sm" onclick="scanLabel('${id}')">📷 Scanner</button>
+      <button class="btn btn-danger btn-sm" onclick="removeWineRow('${id}')">✕</button>
       <input type="file" id="scan_${id}" accept="image/*" capture="environment" style="display:none"
       onchange="processLabelScan(this, '${id}')">
     </div>
@@ -1196,94 +1232,193 @@ function addWineRow() {
       <div class="form-group" style="margin-bottom:8px;">
         <label style="font-size:11px;">Région</label>
         <input type="text" id="${id}_region" placeholder="ex : Bourgogne" list="regions_list" oninput="updateAppellationList(this.value, '${id}_appellation')">
-        </div>
+      </div>
       <div class="form-group" style="margin-bottom:8px;">
         <label style="font-size:11px;">Appellation</label>
         <input type="text" id="${id}_appellation" placeholder="ex: Gevrey-Chambertin" list="appellations_list_dynamic">
       </div>
+      <div class="form-group" style="margin-bottom:8px;">
+        <label style="font-size:11px;">Millésime</label>
+        <input type="number" id="${id}_millesime" placeholder="ex: 2019" min="1900" max="2099">
+      </div>
     </div>
     <div class="form-group" style="margin-bottom:0;">
-      <label style="font-size:11px;">Millésime</label>
-      <input type="number" id="${id}_millesime" placeholder="ex: 2019" min="1900" max="2099">
+      <label style="font-size:11px;">Couleur <span style="text-transform:none;font-weight:400;color:var(--gris);">(aide l'IA pour l'ordre)</span></label>
+      <select id="${id}_color">
+        <option value="">— Non précisée —</option>
+        ${WINE_COLORS.map(c => `<option value="${c}">${c}</option>`).join('')}
+      </select>
     </div>
+    <div class="wine-pairing" id="${id}_pairing"></div>
   `;
   list.appendChild(div);
   if (!window._sortable) {
-  window._sortable = new Sortable(
-    document.getElementById('wine-rows-list'),
-    {
+    window._sortable = new Sortable(list, {
       animation: 150,
       handle: '.drag-handle',
-      ghostClass: 'sortable-ghost'
-    }
-  );
-}
+      ghostClass: 'sortable-ghost',
+      onEnd: renumberWineRows
+    });
+  }
+  if (!list.dataset.listening) {
+    list.dataset.listening = '1';
+    // Toute modification enlève le surlignage rouge du champ et invalide la vérification
+    const onEdit = e => {
+      if (e.target.matches('input, select')) {
+        e.target.style.borderColor = '';
+        markWinesDirty();
+      }
+    };
+    list.addEventListener('input', onEdit);
+    list.addEventListener('change', onEdit);
+  }
+  markWinesDirty();
 }
 
-function validateWines() {
-  const rows = [...document.getElementById('wine-rows-list').children];
-  let missing = 0;
-  rows.forEach(row => {
-    const wid = row.id.replace('row_', '');
-    ['producer','region','appellation','millesime'].forEach(f => {
-      const el = document.getElementById(wid + '_' + f);
-      const empty = !el?.value.trim();
-      if (el) el.style.borderColor = empty ? '#8B2235' : '';
-      if (empty) missing++;
-    });
-  });
-  return missing;
+function removeWineRow(wid) {
+  document.getElementById('row_' + wid)?.remove();
+  renumberWineRows();
+  markWinesDirty();
 }
 
 function renumberWineRows() {
-  [...document.getElementById('wine-rows-list').children].forEach((row, i) => {
+  wineRows().forEach((row, i) => {
     const t = row.querySelector('.wine-row-title');
     if (t) t.textContent = 'Vin ' + (i + 1);
   });
 }
 
+function markWinesDirty() {
+  if (!winesValidated) return;
+  winesValidated = false;
+  const box = document.getElementById('wines-validation');
+  if (box) box.innerHTML = '<span class="text-muted">Vins modifiés — pensez à re-valider.</span>';
+}
+
+// Surligne les champs manquants et renvoie la liste des problèmes par vin
+function validateWines() {
+  const issues = [];
+  wineRows().forEach((row, i) => {
+    const wid = row.id.replace('row_', '');
+    const missing = [];
+    Object.entries(REQUIRED_FIELDS).forEach(([f, label]) => {
+      const el = document.getElementById(wid + '_' + f);
+      const empty = !el?.value.trim();
+      if (el) el.style.borderColor = empty ? '#8B2235' : '';
+      if (empty) missing.push(label);
+    });
+    const status = document.getElementById(wid + '_status');
+    if (status) {
+      status.textContent = missing.length ? '⚠️ incomplet' : '✅';
+      status.style.color = missing.length ? '#e07a8a' : '';
+    }
+    if (missing.length) issues.push({ label: 'Vin ' + (i + 1), missing });
+  });
+  return issues;
+}
+
+function confirmWines() {
+  const rows = wineRows();
+  const box = document.getElementById('wines-validation');
+  if (rows.length === 0) { showToast('Ajoutez au moins un vin'); return; }
+  const issues = validateWines();
+  box.style.display = 'block';
+  if (issues.length) {
+    box.innerHTML = `<div style="color:#e07a8a;margin-bottom:4px;">${issues.length} vin(s) incomplet(s) :</div>` +
+      issues.map(x => `<div>• ${x.label} : ${x.missing.join(', ')} manquant${x.missing.length > 1 ? 's' : ''}</div>`).join('') +
+      `<div class="text-muted" style="margin-top:6px;">Complétez les champs en rouge, ou validez quand même.</div>`;
+    if (!confirm(issues.length + ' vin(s) incomplet(s). Valider quand même ?')) return;
+  } else {
+    box.innerHTML = `✅ ${rows.length} vin${rows.length > 1 ? 's' : ''} vérifié${rows.length > 1 ? 's' : ''}.`;
+  }
+  winesValidated = true;
+  if (!issues.length) box.innerHTML += ' Vous pouvez saisir le menu.';
+  document.getElementById('menu-step').classList.remove('step-locked');
+  document.getElementById('menu-text').focus();
+}
+
+// Le Worker peut renvoyer soit directement {order, pairings, reasoning},
+// soit une réponse brute de l'API Claude (blocs content[]).
+function parseOrderResponse(data) {
+  if (Array.isArray(data?.order)) return data;
+  const textBlock = (data?.content || []).find(b => b.type === 'text');
+  const raw = (textBlock?.text || '').replace(/```json|```/g, '').trim();
+  if (!raw) throw new Error(data?.error || 'Réponse vide de l\'IA');
+  return JSON.parse(raw);
+}
+
 async function suggestWineOrder() {
   const menu = document.getElementById('menu-text').value.trim();
   if (!menu) { showToast('Saisissez le menu'); return; }
-  const rows = [...document.getElementById('wine-rows-list').children];
+  const rows = wineRows();
   if (rows.length < 2) { showToast('Ajoutez au moins 2 vins'); return; }
-  const missing = validateWines();
-  if (missing > 0 && !confirm(missing + ' champ(s) vide(s). Continuer quand même ?')) return;
+  if (!winesValidated) {
+    const issues = validateWines();
+    if (issues.length && !confirm(issues.length + ' vin(s) incomplet(s). Continuer quand même ?')) return;
+  }
 
-  const wines = rows.map(row => {
-    const wid = row.id.replace('row_', '');
-    const v = f => document.getElementById(wid + '_' + f)?.value.trim() || '';
-    return { id: wid, producer: v('producer'), region: v('region'), appellation: v('appellation'), millesime: v('millesime') };
-  });
+  const wines = rows.map(readWineRow);
 
-  showLoading("Réflexion de l'IA…");
+  showLoading("L'IA compose l'ordre de dégustation…");
   try {
     const res = await fetch(WORKER_URL.replace(/\/$/, '') + '/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ wines, menu })
     });
-    if (!res.ok) throw new Error('Worker ' + res.status);
-    const data = await res.json();
-    const raw = (data.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(raw);
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(payload.error || 'Worker ' + res.status);
+    const parsed = parseOrderResponse(payload);
 
     const known = new Set(wines.map(w => w.id));
-    let order = (parsed.order || []).filter(id => known.has(id));
+    const order = [...new Set((parsed.order || []).filter(id => known.has(id)))];
     wines.forEach(w => { if (!order.includes(w.id)) order.push(w.id); });
 
     const list = document.getElementById('wine-rows-list');
     order.forEach(id => list.appendChild(document.getElementById('row_' + id)));
     renumberWineRows();
 
+    // Accord mets-vin affiché sous chaque vin
+    const pairings = {};
+    (parsed.pairings || []).forEach(p => { if (p?.id) pairings[p.id] = p; });
+    wines.forEach(w => {
+      const el = document.getElementById(w.id + '_pairing');
+      if (!el) return;
+      const p = pairings[w.id];
+      if (p && (p.course || p.reason)) {
+        el.innerHTML = `🍽 <strong>${escapeHtml(p.course || '')}</strong>${p.reason ? ' — ' + escapeHtml(p.reason) : ''}`;
+        el.dataset.course = p.course || '';
+        el.style.display = 'block';
+      } else {
+        el.style.display = 'none';
+        el.dataset.course = '';
+      }
+    });
+
     const box = document.getElementById('order-reasoning');
     box.textContent = parsed.reasoning || '';
     box.style.display = parsed.reasoning ? 'block' : 'none';
     hideLoading();
-    showToast('Ordre proposé ! Réorganisez si besoin.');
+    showToast('Ordre proposé ! Glissez ⠿ pour ajuster.');
+    document.getElementById('wine-rows-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     hideLoading(); console.error(e); showToast('Erreur : ' + e.message);
   }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+function resetCreateForm() {
+  wineRowCount = 0;
+  winesValidated = false;
+  document.getElementById('wine-rows-list').innerHTML = '';
+  document.getElementById('menu-text').value = '';
+  document.getElementById('order-reasoning').style.display = 'none';
+  const box = document.getElementById('wines-validation');
+  box.style.display = 'none'; box.innerHTML = '';
+  document.getElementById('menu-step').classList.add('step-locked');
 }
 
 async function createSession() {
@@ -1297,17 +1432,18 @@ async function createSession() {
 
   const wines = [];
   let idx = 1;
-const rows = [...document.getElementById('wine-rows-list').children];
-rows.forEach(row => {
-  const wid = row.id.replace('row_', '');
-  const p = document.getElementById(wid+'_producer')?.value.trim() || '';
-  const r = document.getElementById(wid+'_region')?.value.trim() || '';
-  const a = document.getElementById(wid+'_appellation')?.value.trim() || '';
-  const m = parseInt(document.getElementById(wid+'_millesime')?.value) || 0;
-  if (p || r || a || m) {
-    wines.push({ id: wid, label: 'Vin '+(idx++), answer: {producer:p, region:r, appellation:a, millesime:m}, revealed: false });
-  }
-});
+  wineRows().forEach(row => {
+    const w = readWineRow(row);
+    const m = parseInt(w.millesime) || 0;
+    if (w.producer || w.region || w.appellation || m) {
+      const pairing = document.getElementById(w.id + '_pairing')?.dataset.course || '';
+      wines.push({
+        id: w.id, label: 'Vin '+(idx++),
+        answer: { producer: w.producer, region: w.region, appellation: w.appellation, millesime: m, color: w.color },
+        pairing, revealed: false
+      });
+    }
+  });
 
   if (wines.length === 0) { showToast('Ajoutez au moins un vin'); return; }
 
@@ -1320,6 +1456,7 @@ rows.forEach(row => {
       createdAt: Date.now(),
       status: 'active',
       wines,
+      menu: document.getElementById('menu-text').value.trim(),
       tasters: {
         [host]: { answers: {}, submitted: false }
       }
@@ -1330,8 +1467,7 @@ rows.forEach(row => {
     currentSession = sessionData;
     subscribeToSession(code);
 
-    wineRowCount = 0;
-    document.getElementById('wine-rows-list').innerHTML = '';
+    resetCreateForm();
     hideLoading();
     showToast(`Session créée ! Code : ${code}`);
     showScreen('session');
@@ -2168,13 +2304,6 @@ async function rejoinFromHistory(code) {
   } catch(e) { hideLoading(); showToast('Erreur : ' + e.message); }
 }
 
-function removeWineRow(index){
-  const row =
-    document.getElementById(`wine-row-${index}`);
-  if(row){
-    row.remove();
-  }
-}
 
 /* ═══════════════════════
    UTILITAIRES
@@ -2439,6 +2568,8 @@ window.addWineRow              = addWineRow;
 window.createSession           = createSession;
 window.suggestWineOrder = suggestWineOrder;
 window.validateWines = validateWines;
+window.confirmWines            = confirmWines;
+window.removeWineRow           = removeWineRow;
 window.joinSession             = joinSession;
 window.quickJoinSession        = quickJoinSession;
 window.renderAvailableSessions = renderAvailableSessions;
