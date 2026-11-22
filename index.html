@@ -1135,6 +1135,7 @@ function subscribeToSession(code) {
   unsubscribeSession = onSnapshot(sessionRef(code), snap => {
     if (!snap.exists()) return;
     currentSession = snap.data();
+    applyPendingAnswers();
     // Mettre à jour l'UI selon l'écran actif
     const active = document.querySelector('.screen.active');
     if (!active) return;
@@ -1620,7 +1621,28 @@ function renderSessionScreen() {
   document.getElementById('session-progress').style.width = (answered/session.wines.length*100)+'%';
 
   const list = document.getElementById('session-wines-list');
-  // Conserver les éléments ouverts
+
+  // Si les vins (et leur état révélé) n'ont pas changé, on met à jour en place
+  // sans recréer les champs : la saisie en cours n'est jamais interrompue.
+  const signature = session.code + '|' + name + '|' + session.wines.map(w => w.id + (w.revealed ? '+' : '-')).join(',');
+  if (list.dataset.signature === signature && list.children.length) {
+    session.wines.forEach(wine => {
+      const ans = taster.answers[wine.id] || {};
+      const status = document.getElementById('status_' + wine.id);
+      if (status) status.textContent = wineStatusText(wine, ans);
+      if (wine.revealed) return;
+      ['producer','region','appellation','millesime'].forEach(f => {
+        const el = document.getElementById(`inp_${wine.id}_${f}`);
+        const val = ans[f] == null ? '' : String(ans[f]);
+        if (el && el !== document.activeElement && el.value !== val) el.value = val;
+      });
+    });
+    return;
+  }
+  list.dataset.signature = signature;
+
+  // Conserver les éléments ouverts et le champ actif
+  const focusedId = list.contains(document.activeElement) ? document.activeElement.id : null;
   const openIds = new Set();
   list.querySelectorAll('.wine-item-body.open').forEach(b => openIds.add(b.id.replace('body_','')));
   list.innerHTML = '';
@@ -1631,8 +1653,8 @@ function renderSessionScreen() {
     const div = document.createElement('div');
     div.className = 'wine-item';
 
-    const hasSomething = ans.producer || ans.region || ans.appellation || ans.millesime;
-    const statusText = isRevealed ? '🔓 Révélé' : (hasSomething ? '✓ Saisi' : '...');
+    const statusText = wineStatusText(wine, ans);
+    const v = f => escapeHtml(ans[f] == null ? '' : ans[f]);
 
     let bodyContent = '';
     if (isRevealed) {
@@ -1640,10 +1662,10 @@ function renderSessionScreen() {
       bodyContent = `
         <div style="margin-bottom:12px;">
           <p class="text-muted" style="font-size:12px;margin-bottom:8px;">Vos réponses</p>
-          <div class="reveal-row"><span class="field-label">Producteur</span><span class="field-val">${ans.producer||'—'}</span></div>
-          <div class="reveal-row"><span class="field-label">Region</span><span class="field-val">${ans.region||'—'}</span></div>
-          <div class="reveal-row"><span class="field-label">Appellation</span><span class="field-val">${ans.appellation||'—'}</span></div>
-          <div class="reveal-row"><span class="field-label">Millésime</span><span class="field-val">${ans.millesime||'—'}</span></div>
+          <div class="reveal-row"><span class="field-label">Producteur</span><span class="field-val">${v('producer')||'—'}</span></div>
+          <div class="reveal-row"><span class="field-label">Region</span><span class="field-val">${v('region')||'—'}</span></div>
+          <div class="reveal-row"><span class="field-label">Appellation</span><span class="field-val">${v('appellation')||'—'}</span></div>
+          <div class="reveal-row"><span class="field-label">Millésime</span><span class="field-val">${v('millesime')||'—'}</span></div>
         </div>
         <div>
           <p class="text-muted" style="font-size:12px;margin-bottom:8px;">Réponses correctes</p>
@@ -1654,23 +1676,23 @@ function renderSessionScreen() {
       bodyContent = `
         <div class="form-group">
           <label>Producteur</label>
-          <input type="text" id="inp_${wine.id}_producer" value="${ans.producer||''}" placeholder="Votre réponse…"
+          <input type="text" id="inp_${wine.id}_producer" value="${v('producer')}" placeholder="Votre réponse…"
             oninput="saveAnswer('${wine.id}','producer',this.value)">
         </div>
         <div class="form-group">
             <label>Région</label>
-            <input type="text" id="inp_${wine.id}_region" value="${ans.region||''}"
+            <input type="text" id="inp_${wine.id}_region" value="${v('region')}"
               placeholder="Votre réponse…" list="regions_list"
               oninput="saveAnswer('${wine.id}','region',this.value); updateAppellationList(this.value, 'inp_${wine.id}_appellation')">
         </div>
         <div class="form-group">
           <label>Appellation</label>
-          <input type="text" id="inp_${wine.id}_appellation" value="${ans.appellation||''}" placeholder="Votre réponse…"
+          <input type="text" id="inp_${wine.id}_appellation" value="${v('appellation')}" placeholder="Votre réponse…"
             list="appellations_list_dynamic" oninput="saveAnswer('${wine.id}','appellation',this.value)">
         </div>
         <div class="form-group" style="margin-bottom:0;">
           <label>Millésime</label>
-          <input type="number" id="inp_${wine.id}_millesime" value="${ans.millesime||''}" placeholder="ex: 2018"
+          <input type="number" id="inp_${wine.id}_millesime" value="${v('millesime')}" placeholder="ex: 2018"
             min="1900" max="2099" oninput="saveAnswer('${wine.id}','millesime',this.value)">
         </div>`;
     }
@@ -1680,7 +1702,7 @@ function renderSessionScreen() {
       <div class="wine-item-header" onclick="toggleWineEntry('${wine.id}')">
         <span class="wine-num">${idx+1}</span>
         <span class="wine-item-title">${wine.label}</span>
-        <span class="wine-item-status">${statusText}</span>
+        <span class="wine-item-status" id="status_${wine.id}">${statusText}</span>
       </div>
       <div class="wine-item-body ${isOpen?'open':''}" id="body_${wine.id}">${bodyContent}</div>`;
     list.appendChild(div);
@@ -1693,6 +1715,30 @@ function renderSessionScreen() {
       return !w.revealed && (!a || (!a.producer && !a.region && !a.appellation && !a.millesime));
     });
     if (first) document.getElementById('body_'+first.id)?.classList.add('open');
+  }
+
+  // Rendre le focus au champ qui était en cours de saisie
+  if (focusedId) {
+    const el = document.getElementById(focusedId);
+    if (el) { el.focus(); if (el.type === 'text') el.setSelectionRange(el.value.length, el.value.length); }
+  }
+}
+
+function wineStatusText(wine, ans) {
+  if (wine.revealed) return '🔓 Révélé';
+  return (ans.producer || ans.region || ans.appellation || ans.millesime) ? '✓ Saisi' : '...';
+}
+
+// Saisies locales pas encore confirmées par Firestore : elles priment sur
+// les données reçues, sinon une ancienne valeur écraserait la frappe en cours.
+const pendingAnswers = {};
+function applyPendingAnswers() {
+  const taster = currentUser && currentSession?.tasters?.[currentUser.name];
+  if (!taster) return;
+  taster.answers = taster.answers || {};
+  for (const [key, value] of Object.entries(pendingAnswers)) {
+    const [wineId, field] = key.split('|');
+    (taster.answers[wineId] ||= {})[field] = value;
   }
 }
 
@@ -1721,14 +1767,21 @@ function saveAnswer(wineId, field, value) {
     const a = taster.answers[w.id]; return a && (a.producer || a.region || a.appellation || a.millesime);
   }).length;
   document.getElementById('session-progress').style.width = (answered/currentSession.wines.length*100)+'%';
+  const statusEl = document.getElementById('status_' + wineId);
+  const wine = currentSession.wines.find(w => w.id === wineId);
+  if (statusEl && wine) statusEl.textContent = wineStatusText(wine, taster.answers[wineId]);
 
   // Debounce l'écriture Firestore (500ms)
-  clearTimeout(saveTimers[wineId+field]);
-  saveTimers[wineId+field] = setTimeout(async () => {
+  const key = wineId + '|' + field;
+  pendingAnswers[key] = parsed;
+  clearTimeout(saveTimers[key]);
+  saveTimers[key] = setTimeout(async () => {
     try {
       await updateDoc(sessionRef(sessionCode), {
         [`tasters.${name}.answers.${wineId}.${field}`]: parsed
       });
+      // Confirmé : on ne force plus la valeur locale (sauf si l'utilisateur a retapé entre-temps)
+      if (pendingAnswers[key] === parsed) delete pendingAnswers[key];
     } catch(e) { console.warn('Save error', e); }
   }, 500);
 }
@@ -2318,6 +2371,8 @@ function leaveSession() {
   if (!confirm('Quitter la session en cours ?')) return;
   if (unsubscribeSession) { unsubscribeSession(); unsubscribeSession = null; }
   currentUser = null; currentSession = null;
+  Object.keys(pendingAnswers).forEach(k => delete pendingAnswers[k]);
+  document.getElementById('session-wines-list').dataset.signature = '';
   localStorage.removeItem(LOCAL_KEY);
   const navReveal = document.getElementById('nav-reveal');
   if (navReveal) navReveal.style.display = 'none';
