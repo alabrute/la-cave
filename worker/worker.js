@@ -44,6 +44,10 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS });
     }
+    // GET (aperçu Cloudflare, navigateur) : simple vérification que le Worker tourne
+    if (request.method === 'GET') {
+      return json({ ok: true, message: 'Worker La Cave opérationnel 🍷 (routes POST : /, /order, /push)' });
+    }
     if (request.method !== 'POST') {
       return json({ error: 'Méthode non autorisée' }, 405);
     }
