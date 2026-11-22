@@ -4,6 +4,12 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Cave — Dégustation à l'aveugle</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="La Cave">
+<meta name="theme-color" content="#1A0A0A">
 <link rel="preconnect" href="https://fonts.googleapis.com/">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -653,6 +659,12 @@ input::placeholder {
       <div class="progress-bar-inner" id="session-progress" style="width:0%"></div>
     </div>
 
+    <div class="card card-dark" id="push-card" style="display:none;margin-bottom:14px;text-align:center;padding:14px;">
+      <p style="font-size:13px;margin-bottom:10px;">🔔 Soyez prévenu quand l'animateur révèle un vin</p>
+      <button class="btn btn-primary btn-sm" id="push-btn" onclick="enablePushNotifications()">Activer les notifications</button>
+      <p class="text-muted" id="push-hint" style="font-size:12px;line-height:1.5;"></p>
+    </div>
+
     <div id="session-wines-list"></div>
 
     <div class="card" style="margin-top:16px;text-align:center;" id="session-complete-msg">
@@ -1005,12 +1017,13 @@ async function sendPushToAll(session, title, body) {
   for (const name of Object.keys(subs)) {
     if (name === currentUser.name) continue; // pas besoin de notifier l'organisateur
     try {
-      await fetch(WORKER_URL + '/push', {
+      const res = await fetch(WORKER_URL.replace(/\/$/, '') + '/push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subscription: JSON.parse(subs[name]), title, body })
       });
-    } catch(e) {}
+      if (!res.ok) console.warn('Push vers ' + name + ' échoué :', await res.text());
+    } catch(e) { console.warn('Push vers ' + name + ' échoué :', e); }
   }
 }
 
@@ -1034,25 +1047,74 @@ function loadUser() {
   } catch(e) {}
 }
 
-async function initPushNotifications() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+const VAPID_PUBLIC_KEY = 'BJl7hP3X0jsR1-khsXT_W1GloLm8rZWaj4hBHhIukA8p1kwYUHKYOnjZDYoBq9JWm7giB0KeX7LZMXnP5t2QrCA';
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const pushSupported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+let pushSyncing = false;
+
+// Abonne cet appareil et enregistre l'abonnement dans la session
+async function subscribeToPush() {
+  const reg = await navigator.serviceWorker.register('sw.js');
+  await navigator.serviceWorker.ready;
+  const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+  });
+  if (currentUser?.sessionCode) {
+    const json = JSON.stringify(sub);
+    await updateDoc(sessionRef(currentUser.sessionCode), { [`pushSubscriptions.${currentUser.name}`]: json });
+    if (currentSession) (currentSession.pushSubscriptions ||= {})[currentUser.name] = json;
+  }
+}
+
+// Bouton « Activer les notifications » (la permission doit venir d'un clic)
+async function enablePushNotifications() {
   try {
-    const reg = await navigator.serviceWorker.register('/la-cave/sw.js');
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') return;
+    if (permission !== 'granted') { showToast('Notifications refusées'); updatePushCard(); return; }
+    await subscribeToPush();
+    showToast('🔔 Notifications activées');
+  } catch (e) {
+    console.warn('Push non disponible', e);
+    showToast('Impossible d\'activer les notifications : ' + e.message);
+  }
+  updatePushCard();
+}
 
-    // Stocker l'abonnement dans Firestore pour cet utilisateur
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array('BJl7hP3X0jsR1-khsXT_W1GloLm8rZWaj4hBHhIukA8p1kwYUHKYOnjZDYoBq9JWm7giB0KeX7LZMXnP5t2QrCA')
-    });
+// Affiche la carte d'activation si besoin ; réabonne en silence si la permission est déjà accordée
+function updatePushCard() {
+  const card = document.getElementById('push-card');
+  if (!card || !currentUser || !currentSession) return;
+  const btn = document.getElementById('push-btn'), hint = document.getElementById('push-hint');
+  const isHost = currentSession.host === currentUser.name;
+  const show = (withButton, text) => {
+    card.style.display = 'block';
+    btn.style.display = withButton ? '' : 'none';
+    hint.textContent = text || '';
+    hint.style.marginTop = text && withButton ? '8px' : '0';
+  };
 
-    if (currentUser?.sessionCode) {
-      await updateDoc(sRef(currentUser.sessionCode), {
-        [`pushSubscriptions.${currentUser.name}`]: JSON.stringify(sub)
-      });
+  if (isHost || currentSession.status !== 'active') { card.style.display = 'none'; return; }
+  if (!pushSupported) {
+    if (isIOS && !isStandalone) {
+      show(false, 'Sur iPhone : touchez Partager ⬆️ puis « Sur l\'écran d\'accueil », ouvrez La Cave depuis l\'icône et rejoignez la session.');
+    } else card.style.display = 'none';
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    show(false, 'Notifications bloquées : autorisez-les pour ce site dans les réglages du navigateur.');
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    card.style.display = 'none';
+    if (!currentSession.pushSubscriptions?.[currentUser.name] && !pushSyncing) {
+      pushSyncing = true;
+      subscribeToPush().catch(e => console.warn('Push non disponible', e)).finally(() => { pushSyncing = false; });
     }
-  } catch(e) { console.warn('Push non disponible', e); }
+    return;
+  }
+  show(true);
 }
 
 function urlBase64ToUint8Array(base64String) {
@@ -1638,6 +1700,8 @@ function renderSessionScreen() {
 
   const list = document.getElementById('session-wines-list');
 
+  updatePushCard();
+
   // Si les vins (et leur état révélé) n'ont pas changé, on met à jour en place
   // sans recréer les champs : la saisie en cours n'est jamais interrompue.
   const signature = session.code + '|' + name + '|' + session.wines.map(w => w.id + (w.revealed ? '+' : '-')).join(',');
@@ -2073,6 +2137,8 @@ async function doReveal() {
     );
     await updateDoc(sessionRef(sessionCode), { wines: updatedWines });
     hideLoading();
+    // Notifier les dégustateurs (sans bloquer l'affichage)
+    sendPushToAll(session, `🔓 ${wine.label} révélé !`, 'Découvrez la réponse et vos points sur La Cave');
 
     // L'UI se met à jour via le listener onSnapshot, mais on force localement
     currentSession = {...session, wines: updatedWines};
@@ -2641,6 +2707,7 @@ window.suggestWineOrder = suggestWineOrder;
 window.validateWines = validateWines;
 window.confirmWines            = confirmWines;
 window.startNewSession         = startNewSession;
+window.enablePushNotifications = enablePushNotifications;
 window.removeWineRow           = removeWineRow;
 window.joinSession             = joinSession;
 window.quickJoinSession        = quickJoinSession;
