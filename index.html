@@ -580,6 +580,17 @@ input::placeholder {
       <p class="text-muted" id="wines-hint" style="font-size:12px;margin-top:8px;">Ajoutez au moins 1 vin. Les réponses sont cachées aux dégustateurs.</p>
     </div>
 
+    <div class="card">
+      <h3>Menu & ordre de dégustation</h3>
+      <p class="text-muted" style="font-size:12px;margin-bottom:10px;">Vérifiez que chaque vin est complet (région, appellation, millésime), puis décrivez le menu.</p>
+      <div class="form-group">
+        <label>Menu prévu</label>
+        <textarea id="menu-text" rows="4" placeholder="ex : Entrée : saumon gravlax. Plat : magret de canard aux cerises. Dessert : tarte au citron."></textarea>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="suggestWineOrder()">✨ Proposer un ordre de dégustation</button>
+      <div id="order-reasoning" class="text-muted" style="display:none;font-size:12px;margin-top:12px;line-height:1.5;"></div>
+    </div>
+
     <button class="btn btn-gold btn-full" onclick="createSession()">Créer la session →</button>
   </section>
 
@@ -1170,7 +1181,7 @@ function addWineRow() {
   div.style.cssText = 'padding:14px;margin-bottom:10px;';
   div.innerHTML = `
     <div class="flex-between" style="margin-bottom:10px;">
-      <span class="text-or" style="font-family:'Playfair Display',serif;font-size:15px;">Vin ${wineRowCount}</span>
+      <span class="text-or wine-row-title" style="font-family:'Playfair Display',serif;font-size:15px;">Vin ${wineRowCount}</span>
       <span class="drag-handle" style="cursor:grab;color:var(--gris);margin-right:8px;">⠿</span>
       <button class="btn btn-danger btn-sm" onclick="document.getElementById('row_${id}').remove()">✕</button>
       <button class="btn btn-ghost btn-sm" onclick="scanLabel('${id}')">📷 Scanner l'étiquette</button>
@@ -1207,6 +1218,72 @@ function addWineRow() {
     }
   );
 }
+}
+
+function validateWines() {
+  const rows = [...document.getElementById('wine-rows-list').children];
+  let missing = 0;
+  rows.forEach(row => {
+    const wid = row.id.replace('row_', '');
+    ['producer','region','appellation','millesime'].forEach(f => {
+      const el = document.getElementById(wid + '_' + f);
+      const empty = !el?.value.trim();
+      if (el) el.style.borderColor = empty ? '#8B2235' : '';
+      if (empty) missing++;
+    });
+  });
+  return missing;
+}
+
+function renumberWineRows() {
+  [...document.getElementById('wine-rows-list').children].forEach((row, i) => {
+    const t = row.querySelector('.wine-row-title');
+    if (t) t.textContent = 'Vin ' + (i + 1);
+  });
+}
+
+async function suggestWineOrder() {
+  const menu = document.getElementById('menu-text').value.trim();
+  if (!menu) { showToast('Saisissez le menu'); return; }
+  const rows = [...document.getElementById('wine-rows-list').children];
+  if (rows.length < 2) { showToast('Ajoutez au moins 2 vins'); return; }
+  const missing = validateWines();
+  if (missing > 0 && !confirm(missing + ' champ(s) vide(s). Continuer quand même ?')) return;
+
+  const wines = rows.map(row => {
+    const wid = row.id.replace('row_', '');
+    const v = f => document.getElementById(wid + '_' + f)?.value.trim() || '';
+    return { id: wid, producer: v('producer'), region: v('region'), appellation: v('appellation'), millesime: v('millesime') };
+  });
+
+  showLoading("Réflexion de l'IA…");
+  try {
+    const res = await fetch(WORKER_URL.replace(/\/$/, '') + '/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wines, menu })
+    });
+    if (!res.ok) throw new Error('Worker ' + res.status);
+    const data = await res.json();
+    const raw = (data.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(raw);
+
+    const known = new Set(wines.map(w => w.id));
+    let order = (parsed.order || []).filter(id => known.has(id));
+    wines.forEach(w => { if (!order.includes(w.id)) order.push(w.id); });
+
+    const list = document.getElementById('wine-rows-list');
+    order.forEach(id => list.appendChild(document.getElementById('row_' + id)));
+    renumberWineRows();
+
+    const box = document.getElementById('order-reasoning');
+    box.textContent = parsed.reasoning || '';
+    box.style.display = parsed.reasoning ? 'block' : 'none';
+    hideLoading();
+    showToast('Ordre proposé ! Réorganisez si besoin.');
+  } catch (e) {
+    hideLoading(); console.error(e); showToast('Erreur : ' + e.message);
+  }
 }
 
 async function createSession() {
@@ -2360,6 +2437,8 @@ window.showScreen              = showScreen;
 window.updateAppellationList   = updateAppellationList;
 window.addWineRow              = addWineRow;
 window.createSession           = createSession;
+window.suggestWineOrder = suggestWineOrder;
+window.validateWines = validateWines;
 window.joinSession             = joinSession;
 window.quickJoinSession        = quickJoinSession;
 window.renderAvailableSessions = renderAvailableSessions;
